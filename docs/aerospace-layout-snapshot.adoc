@@ -1,0 +1,72 @@
+= aerospace-layout-snapshot(1)
+include::util/man-attributes.adoc[]
+// tag::purpose[]
+:manpurpose: Save the tiling layout of a workspace and restore it later
+// end::purpose[]
+:manname: aerospace-layout-snapshot
+
+// =========================================================== Synopsis
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace layout-snapshot [-h|--help] [--workspace <workspace>] (save|restore) <name>
+aerospace layout-snapshot [-h|--help] [--fail-if-noop] delete <name>
+aerospace layout-snapshot [-h|--help] list
+
+// end::synopsis[]
+
+// =========================================================== Description
+== Description
+
+// tag::body[]
+{manpurpose}
+
+`save` walks the tiling tree of the target workspace and writes it to
+`$XDG_STATE_HOME/aerospace/layouts/<name>.json`, defaulting to `~/.local/state/aerospace/layouts/<name>.json`.
+Recorded per window: the app bundle id, the app name, and the window title.
+Recorded per container: the orientation, the layout, and each child's share of its parent.
+
+`restore` reads that file and rebuilds the tree, filling each saved slot with a window that is running now.
+A slot is filled by a window of the same app, preferring one whose title matches exactly, so that several
+windows of the same app land where you expect.
+Windows already on the target workspace are considered first, then windows on any other workspace, so a
+layout can be gathered back together after the windows have been scattered by a restart.
+Saved slots with no matching window are dropped, and windows on the workspace that the snapshot doesn't
+mention are appended at the end.
+
+Only the tiling tree is saved and restored.
+Floating windows, fullscreen state, and windows in scratchpads are left alone.
+
+Restoring never launches anything.
+If you want an app started first, chain the commands:
+`exec-and-forget open -a Zotero` then `layout-snapshot restore research`.
+
+// =========================================================== Options
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+--workspace <workspace>:: Act on the specified workspace instead of the focused one
+--fail-if-noop:: Exit with non-zero exit code if there was no snapshot to delete
+
+// =========================================================== Arguments
+include::./util/conditional-arguments-header.adoc[]
+
+save:: Write the layout of the target workspace to `<name>`
+restore:: Rebuild the layout stored in `<name>` on the target workspace
+delete:: Delete the snapshot `<name>`
+list:: Print the names of all saved snapshots
+<name>:: The name of the snapshot. Must not contain `/` or start with `.`
+
+// =========================================================== Examples
+== Examples
+
+[source,toml]
+----
+alt-shift-1 = 'layout-snapshot save teaching'
+alt-1 = 'layout-snapshot restore teaching'
+----
+
+// end::body[]
+
+// =========================================================== Footer
+include::util/man-footer.adoc[]

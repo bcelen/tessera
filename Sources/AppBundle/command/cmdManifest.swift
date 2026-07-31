@@ -40,6 +40,8 @@ extension CmdArgs {
                 command = JoinWithCommand(args: self as! JoinWithCmdArgs)
             case .layout:
                 command = LayoutCommand(args: self as! LayoutCmdArgs)
+            case .layoutSnapshot:
+                command = LayoutSnapshotCommand(args: self as! LayoutSnapshotCmdArgs)
             case .listApps:
                 command = ListAppsCommand(args: self as! ListAppsCmdArgs)
             case .listExecEnvVars:
@@ -74,6 +76,8 @@ extension CmdArgs {
                 command = ResizeCommand(args: self as! ResizeCmdArgs)
             case .runCallback:
                 command = RunCallbackCommand(args: self as! RunCallbackCmdArgs)
+            case .scratchpad:
+                command = ScratchpadCommand(args: self as! ScratchpadCmdArgs)
             case .split:
                 command = SplitCommand(args: self as! SplitCmdArgs)
             case .subscribe:
@@ -90,6 +94,8 @@ extension CmdArgs {
                 command = TriggerBindingCommand(args: self as! TriggerBindingCmdArgs)
             case .volume:
                 command = VolumeCommand(args: self as! VolumeCmdArgs)
+            case .windowHints:
+                command = WindowHintsCommand(args: self as! WindowHintsCmdArgs)
             case .workspace:
                 command = WorkspaceCommand(args: self as! WorkspaceCmdArgs)
             case .workspaceBackAndForth:

@@ -66,6 +66,11 @@ let fullscreen_help_generated = """
 let join_with_help_generated = """
     USAGE: join-with [-h|--help] [--window-id <window-id>] (left|down|up|right)
     """
+let layout_snapshot_help_generated = """
+    USAGE: layout-snapshot [-h|--help] [--workspace <workspace>] (save|restore) <name>
+       OR: layout-snapshot [-h|--help] [--fail-if-noop] delete <name>
+       OR: layout-snapshot [-h|--help] list
+    """
 let layout_help_generated = """
     USAGE: layout [-h|--help] [--window-id <window-id>|--workspace <workspace>]
                   [--root] [--fail-if-noop]
@@ -143,6 +148,10 @@ let run_callback_help_generated = """
     USAGE: run-callback [-h|--help] [--for-every-window|--window-id <window-id>] on-window-detected
        OR: run-callback [-h|--help] (on-focus-changed|on-focused-monitor-changed)
     """
+let scratchpad_help_generated = """
+    USAGE: scratchpad [-h|--help] [--name <name>] [--window-id <window-id>] (move|release)
+       OR: scratchpad [-h|--help] [--name <name>] [--fail-if-noop] (show|hide|toggle)
+    """
 let split_help_generated = """
     USAGE: split [-h|--help] [--window-id <window-id>] (horizontal|vertical|opposite)
     """
@@ -174,6 +183,11 @@ let volume_help_generated = """
     USAGE: volume [-h|--help] (up|down) [--no-gui]
        OR: volume [-h|--help] (mute-toggle|mute-off|mute-on) [--no-gui]
        OR: volume [-h|--help] set <number> [--no-gui]
+    """
+let window_hints_help_generated = """
+    USAGE: window-hints [-h|--help] [--visible] show
+       OR: window-hints [-h|--help] hide
+       OR: window-hints [-h|--help] --window-id <window-id> pick
     """
 let workspace_back_and_forth_help_generated = """
     USAGE: workspace-back-and-forth [-h|--help]

@@ -17,6 +17,7 @@ let subcommandDescriptions = [
     ["  focus", "Set focus to a window."],
     ["  fullscreen", "Toggle the fullscreen mode for the focused window"],
     ["  join-with", "Put the focused window and the nearest node in the specified direction under a common parent container"],
+    ["  layout-snapshot", "Save the tiling layout of a workspace and restore it later"],
     ["  layout", "Change layout of the focused node to the given layout"],
     ["  list-apps", "Print the list of running applications that appears in the Dock and may have a user interface"],
     ["  list-exec-env-vars", "List environment variables that exec-* commands and callbacks are run with"],
@@ -35,6 +36,7 @@ let subcommandDescriptions = [
     ["  reload-config", "Reload currently active config"],
     ["  resize", "Resize the focused window"],
     ["  run-callback", "Run AeroSpace config callbacks on demand"],
+    ["  scratchpad", "Park a window off-screen and summon it on demand"],
     ["  split", "Split focused window"],
     ["  subscribe", "Subscribe to AeroSpace events and receive notifications via socket"],
     ["  summon-workspace", "Move the requested workspace to the focused monitor."],
@@ -44,6 +46,7 @@ let subcommandDescriptions = [
     ["  trigger-binding", "Trigger AeroSpace binding as if it was pressed by user"],
     ["  true", "Return true value"],
     ["  volume", "Manipulate volume"],
+    ["  window-hints", "Pick a window by pressing a single hint key"],
     ["  workspace-back-and-forth", "Switch between the focused workspace and previously focused workspace back and forth"],
     ["  workspace", "Focus the specified workspace"],
 ]

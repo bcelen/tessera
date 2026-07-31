@@ -20,6 +20,7 @@ public enum CmdKind: String, CaseIterable, Equatable, Sendable {
     case fullscreen
     case joinWith = "join-with"
     case layout
+    case layoutSnapshot = "layout-snapshot"
     case listApps = "list-apps"
     case listExecEnvVars = "list-exec-env-vars"
     case listModes = "list-modes"
@@ -37,6 +38,7 @@ public enum CmdKind: String, CaseIterable, Equatable, Sendable {
     case reloadConfig = "reload-config"
     case resize
     case runCallback = "run-callback"
+    case scratchpad
     case split
     case subscribe
     case summonWorkspace = "summon-workspace"
@@ -48,6 +50,7 @@ public enum CmdKind: String, CaseIterable, Equatable, Sendable {
     case _true = "true"
 
     case volume
+    case windowHints = "window-hints"
     case workspace
     case workspaceBackAndForth = "workspace-back-and-forth"
 }
@@ -90,6 +93,8 @@ func initSubcommands() -> [String: any SubCommandParserProtocol] {
                 result[kind.rawValue] = SubCommandParser(JoinWithCmdArgs.init)
             case .layout:
                 result[kind.rawValue] = SubCommandParser(parseLayoutCmdArgs)
+            case .layoutSnapshot:
+                result[kind.rawValue] = SubCommandParser(parseLayoutSnapshotCmdArgs)
             case .listApps:
                 result[kind.rawValue] = SubCommandParser(parseListAppsCmdArgs)
             case .listExecEnvVars:
@@ -128,6 +133,8 @@ func initSubcommands() -> [String: any SubCommandParserProtocol] {
                 result[kind.rawValue] = SubCommandParser(parseResizeCmdArgs)
             case .runCallback:
                 result[kind.rawValue] = SubCommandParser(parseRunCallbackCmdArgs)
+            case .scratchpad:
+                result[kind.rawValue] = SubCommandParser(parseScratchpadCmdArgs)
             case .split:
                 result[kind.rawValue] = SubCommandParser(parseSplitCmdArgs)
             case .subscribe:
@@ -146,6 +153,8 @@ func initSubcommands() -> [String: any SubCommandParserProtocol] {
                 result[kind.rawValue] = SubCommandParser(TrueCmdArgs.init)
             case .volume:
                 result[kind.rawValue] = SubCommandParser(VolumeCmdArgs.init)
+            case .windowHints:
+                result[kind.rawValue] = SubCommandParser(parseWindowHintsCmdArgs)
             case .workspace:
                 result[kind.rawValue] = SubCommandParser(parseWorkspaceCmdArgs)
             case .workspaceBackAndForth:

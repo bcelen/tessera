@@ -1,0 +1,65 @@
+= aerospace-window-hints(1)
+include::util/man-attributes.adoc[]
+// tag::purpose[]
+:manpurpose: Pick a window by pressing a single hint key
+// end::purpose[]
+:manname: aerospace-window-hints
+
+// =========================================================== Synopsis
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace window-hints [-h|--help] [--visible] show
+aerospace window-hints [-h|--help] hide
+aerospace window-hints [-h|--help] --window-id <window-id> pick
+
+// end::synopsis[]
+
+// =========================================================== Description
+== Description
+
+// tag::body[]
+{manpurpose}
+
+`show` puts a panel in the middle of the main monitor listing your windows, one per row, each with a hint
+letter, the app name, the window title, and the workspace the window is on.
+Press the letter to focus that window.
+Press `esc` to dismiss the panel without switching.
+
+Hint letters are handed out from the home row outwards, and the focused workspace is listed first, so the
+windows you are most likely to want are on the easiest keys.
+At most 26 windows are listed.
+
+While the panel is up, AeroSpace is in a binding mode called `_window-hints` in which only the hint letters
+and `esc` are bound.
+The panel is a non-activating floating panel, so it never takes keyboard focus away from your windows, which
+is why hint letters rather than a search field are used.
+If you ever get stuck in the mode, `aerospace mode main` from a terminal gets you out.
+
+// =========================================================== Options
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+--visible:: Only list windows on visible workspaces
+--window-id <window-id>:: The window to focus. Mandatory for `pick`, and not accepted otherwise
+
+// =========================================================== Arguments
+include::./util/conditional-arguments-header.adoc[]
+
+show:: Show the hints panel and enter the hints binding mode
+hide:: Dismiss the panel and return to the previous binding mode
+pick:: Focus the requested window and dismiss the panel. Bound to the hint letters automatically, you are
+not expected to run it by hand
+
+// =========================================================== Examples
+== Examples
+
+[source,toml]
+----
+alt-slash = 'window-hints show'
+----
+
+// end::body[]
+
+// =========================================================== Footer
+include::util/man-footer.adoc[]

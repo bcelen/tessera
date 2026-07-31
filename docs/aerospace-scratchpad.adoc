@@ -1,0 +1,78 @@
+= aerospace-scratchpad(1)
+include::util/man-attributes.adoc[]
+// tag::purpose[]
+:manpurpose: Park a window off-screen and summon it on demand
+// end::purpose[]
+:manname: aerospace-scratchpad
+
+// =========================================================== Synopsis
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace scratchpad [-h|--help] [--name <name>] [--window-id <window-id>] (move|release)
+aerospace scratchpad [-h|--help] [--name <name>] [--fail-if-noop] (show|hide|toggle)
+
+// end::synopsis[]
+
+// =========================================================== Description
+== Description
+
+// tag::body[]
+{manpurpose}
+
+The scratchpad is the i3-style "put this window somewhere out of the way, and bring it back with one keystroke"
+feature.
+`move` sends a window to the scratchpad, where it becomes invisible.
+`show` pulls it back onto the focused workspace as a floating window and focuses it.
+`hide` sends it away again.
+`toggle` does whichever of the two makes sense.
+
+A summoned window keeps the size and the relative position it had when it was hidden, so a scratchpad terminal
+reappears exactly where you left it.
+
+You can have as many independent scratchpads as you want by passing different `--name` values.
+Without `--name`, all invocations share a single scratchpad called `default`.
+
+If a scratchpad holds several windows, each `show` pulls out the most recently focused one that is still hidden,
+so repeated `show` cycles through them.
+`hide` puts all of the summoned windows of that scratchpad back at once.
+
+Scratchpad membership lives for as long as AeroSpace is running.
+It is not preserved across a restart of AeroSpace.
+
+// =========================================================== Options
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+--name <name>:: Operate on the scratchpad called `<name>`. The default is `default`
+--window-id <window-id>:: Act on the specified window instead of the focused one
+--fail-if-noop:: Exit with non-zero exit code if the command doesn't change anything
+
+// =========================================================== Arguments
+include::./util/conditional-arguments-header.adoc[]
+
+move:: Send the target window to the scratchpad
+show:: Summon a window from the scratchpad to the focused workspace and focus it
+hide:: Send all summoned windows of this scratchpad back to the scratchpad
+toggle:: `hide` if a window of this scratchpad is on the focused workspace, `show` otherwise
+release:: Drop the target window's scratchpad membership. If the window is currently hidden in the scratchpad,
+it is moved to the focused workspace
+
+// =========================================================== Examples
+== Examples
+
+[source,toml]
+----
+# A drop-down terminal, i3-style
+alt-shift-minus = 'scratchpad move'
+alt-minus = 'scratchpad toggle'
+
+# A second, independent scratchpad for notes
+alt-shift-n = 'scratchpad move --name notes'
+alt-n = 'scratchpad toggle --name notes'
+----
+
+// end::body[]
+
+// =========================================================== Footer
+include::util/man-footer.adoc[]

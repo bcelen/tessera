@@ -8,6 +8,10 @@ open class Window: TreeNode, Hashable {
     var isFullscreen: Bool = false
     var noOuterGapsInFullscreen: Bool = false
     var layoutReason: LayoutReason = .standard
+    /// Non-nil if the window is a member of a scratchpad. See `ScratchpadCommand`
+    var scratchpadName: String? = nil
+    /// The workspace the window was on when it was moved to a scratchpad. See `ScratchpadCommand`
+    var scratchpadSourceWorkspace: String? = nil
 
     @MainActor
     init(id: UInt32, _ app: any AbstractApp, lastFloatingSize: CGSize?, parent: NonLeafTreeNodeObject, adaptiveWeight: CGFloat, index: Int) {

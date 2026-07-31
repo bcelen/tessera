@@ -52,6 +52,10 @@ aerospace -h;
 
     | layout [--window-id <window_id>|--root|--workspace <workspace>|--fail-if-noop]... (<layouts>)... [--window-id <window_id>|--root|--workspace <workspace>|--fail-if-noop]...
 
+    | layout-snapshot [--workspace <workspace>]... (save|restore) <snapshot_name> [--workspace <workspace>]...
+    | layout-snapshot [--fail-if-noop]... delete <snapshot_name> [--fail-if-noop]...
+    | layout-snapshot list
+
     | macos-native-fullscreen [--fail-if-noop|--window-id <window_id>]... [on|off] [--fail-if-noop|--window-id <window_id>]...
 
     | macos-native-minimize [--window-id <window_id>]
@@ -80,6 +84,9 @@ aerospace -h;
 
     | split [--window-id <window_id>] (horizontal|vertical|opposite) [--window-id <window_id>]
 
+    | scratchpad [--name <scratchpad_name>|--window-id <window_id>]... (move|release) [--name <scratchpad_name>|--window-id <window_id>]...
+    | scratchpad [--name <scratchpad_name>|--fail-if-noop]... (show|hide|toggle) [--name <scratchpad_name>|--fail-if-noop]...
+
     | swap [--swap-focus|--wrap-around|--window-id <window_id>]... (left|down|up|right|dfs-next|dfs-prev) [--swap-focus|--wrap-around|--window-id <window_id>]...
 
     | test <output_format> (=|~=) <output_format>
@@ -95,6 +102,10 @@ aerospace -h;
     | volume [--no-gui] (up|down) [--no-gui]
     | volume [--no-gui] (mute-toggle|mute-on|mute-off) [--no-gui]
     | volume [--no-gui] set <number> [--no-gui]
+
+    | window-hints [--visible]... show [--visible]...
+    | window-hints hide
+    | window-hints --window-id <window_id> pick
 
     | workspace [--auto-back-and-forth|--fail-if-noop]... <workspace> [--auto-back-and-forth|--fail-if-noop]...
     | workspace [--wrap-around|--stdin|--no-stdin]... (next|prev) [--wrap-around|--stdin|--no-stdin]...
@@ -123,6 +134,8 @@ aerospace -h;
 <mode_id> ::= {{{ aerospace config --get mode --keys }}};
 <workspace> ::= {{{ aerospace list-workspaces --monitor all --empty no }}};
 <number> ::= {{{ true }}};
+<scratchpad_name> ::= {{{ true }}};
+<snapshot_name> ::= {{{ aerospace layout-snapshot list }}};
 <monitor_pattern> ::= {{{ true }}};
 <layouts> ::= h_tiles|v_tiles|h_accordion|v_accordion|tiles|accordion|horizontal|vertical|tiling|floating;
 
