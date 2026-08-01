@@ -38,6 +38,7 @@ let subcommandDescriptions = [
     ["  run-callback", "Run AeroSpace config callbacks on demand"],
     ["  scratchpad", "Park a window off-screen and summon it on demand"],
     ["  split", "Split focused window"],
+    ["  sticky", "Keep a window visible on every workspace"],
     ["  subscribe", "Subscribe to AeroSpace events and receive notifications via socket"],
     ["  summon-workspace", "Move the requested workspace to the focused monitor."],
     ["  swap", "Swaps the focused window with another window."],

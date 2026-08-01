@@ -80,6 +80,8 @@ extension CmdArgs {
                 command = ScratchpadCommand(args: self as! ScratchpadCmdArgs)
             case .split:
                 command = SplitCommand(args: self as! SplitCmdArgs)
+            case .sticky:
+                command = StickyCommand(args: self as! StickyCmdArgs)
             case .subscribe:
                 return .failure("subscribe is not supported in the eval", EXIT_CODE_TWO)
             case .summonWorkspace:

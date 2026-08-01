@@ -113,6 +113,8 @@ func refreshModel_nonCancellable() async {
     if refreshSessionEvent?.isFocusFollowsMouse == true {
         await checkOnFocusChangedCallbacks_nonCancellable()
     } else {
+        // Before the GC, so that a workspace a sticky window just vacated is collected in this pass
+        syncStickyWindows()
         Workspace.garbageCollectUnusedWorkspaces()
         await checkOnFocusChangedCallbacks_nonCancellable()
         normalizeContainers()

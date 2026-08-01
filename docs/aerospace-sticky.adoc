@@ -1,0 +1,69 @@
+= aerospace-sticky(1)
+include::util/man-attributes.adoc[]
+// tag::purpose[]
+:manpurpose: Keep a window visible on every workspace
+// end::purpose[]
+:manname: aerospace-sticky
+
+// =========================================================== Synopsis
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace sticky [-h|--help] [--window-id <window-id>] toggle
+aerospace sticky [-h|--help] [--window-id <window-id>] [--fail-if-noop] on
+aerospace sticky [-h|--help] [--window-id <window-id>] [--fail-if-noop] off
+
+// end::synopsis[]
+
+// =========================================================== Description
+== Description
+
+// tag::body[]
+{manpurpose}
+
+A sticky window stays on screen when you switch workspaces.
+Useful for a timer, a chat window, or a video call that you want in sight no matter what you are doing.
+
+Making a window sticky forces it to float.
+A tiling sticky window would insert itself into the layout of every workspace it visits and rearrange your
+windows behind your back, so the two are mutually exclusive.
+This matches i3, where scratchpad and sticky windows are floating as well.
+
+A sticky window follows the workspace of the monitor it is sitting on, not the focused workspace.
+On a multi-monitor setup that means it stays on its own display rather than chasing your focus around.
+Move it to another display with `move-node-to-monitor` and it will start following that one instead.
+
+Under the hood the window is not in several workspaces at once.
+It is rebound to whichever workspace is active on its monitor, on every refresh.
+The consequence is that the window's tree position is not stable, so do not rely on it in
+`layout-snapshot` or in scripts that walk the tree.
+
+Stickiness lasts for as long as AeroSpace is running.
+It is not preserved across a restart.
+
+// =========================================================== Options
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+--window-id <window-id>:: Act on the specified window instead of the focused one
+--fail-if-noop:: Exit with non-zero exit code if the window is already in the requested state
+
+// =========================================================== Arguments
+include::./util/conditional-arguments-header.adoc[]
+
+on:: Make the window sticky
+off:: Stop the window from being sticky. It stays floating on the workspace it is currently on
+toggle:: Flip the current state
+
+// =========================================================== Examples
+== Examples
+
+[source,toml]
+----
+alt-shift-t = 'sticky toggle'
+----
+
+// end::body[]
+
+// =========================================================== Footer
+include::util/man-footer.adoc[]
