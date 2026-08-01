@@ -108,6 +108,53 @@ func readLayoutSnapshot(_ url: URL) -> ResOrStr<LayoutSnapshot> {
     }
 }
 
+// =========================================================== Bindings
+
+/// The keys that restore `name`, read out of the config. Used by the menu bar so that a saved layout
+/// shows how to get to it. Returns nil when nothing is bound to it.
+///
+/// A binding inside a non-main mode is prefixed with the keys that enter that mode, so a snapshot
+/// bound as `alt-0` then `1` reads as "alt-0 1".
+@MainActor
+func layoutSnapshotRestoreShortcut(_ name: String) -> String? {
+    for (modeId, mode) in config.modes {
+        for binding in mode.bindings.values where binding.restoresLayoutSnapshot(name) {
+            if modeId == mainModeId {
+                return binding.descriptionWithKeyNotation
+            }
+            guard let entry = modeEntryShortcut(modeId) else {
+                return binding.descriptionWithKeyNotation
+            }
+            return entry + " " + binding.descriptionWithKeyNotation
+        }
+    }
+    return nil
+}
+
+@MainActor
+private func modeEntryShortcut(_ modeId: String) -> String? {
+    guard let main = config.modes[mainModeId] else { return nil }
+    return main.bindings.values
+        .first { binding in
+            binding.commands.flatten().contains { command in
+                guard let command = command as? ModeCommand, command.args.targetMode.isInitialized else { return false }
+                return command.args.targetMode.val == modeId
+            }
+        }?
+        .descriptionWithKeyNotation
+}
+
+extension HotkeyBinding {
+    fileprivate func restoresLayoutSnapshot(_ name: String) -> Bool {
+        commands.flatten().contains { command in
+            guard let command = command as? LayoutSnapshotCommand, command.args.action.isInitialized else { return false }
+            return command.args.action.val == .restore && command.args.name == name
+        }
+    }
+}
+
+// =========================================================== Listing
+
 func listLayoutSnapshots() -> [String] {
     let urls = try? FileManager.default.contentsOfDirectory(
         at: layoutSnapshotsDir(),

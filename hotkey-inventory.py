@@ -335,17 +335,17 @@ def read_keyboard_maestro(path: Path = KM_PLIST):
         gname = group.get("Name", "(unnamed group)")
         gactive = group.get("Activate", "") != "Disabled" and group.get("IsActive", True)
         # A macro group is global unless it is restricted to specific apps. KM
-        # has used several key names for that list across versions, so match on
-        # any key mentioning "Application".
+        # has used several key names for that list across versions, so identify
+        # it by shape rather than by name: any list of dicts carrying a bundle
+        # identifier is an application restriction.
         restricted_to = []
-        for key, val in group.items():
-            if "Application" not in key or not isinstance(val, list) or not val:
+        for val in group.values():
+            if not isinstance(val, list) or not val:
                 continue
             for app in val:
-                if isinstance(app, dict):
-                    restricted_to.append(app.get("Name") or app.get("BundleIdentifier") or "?")
-                elif isinstance(app, str):
-                    restricted_to.append(app)
+                if isinstance(app, dict) and ("BundleIdentifier" in app or "Path" in app):
+                    restricted_to.append(
+                        app.get("Name") or app.get("BundleIdentifier") or "?")
         gglobal = not restricted_to
         gscope = gname if gglobal else "%s [%s]" % (gname, ", ".join(sorted(set(restricted_to))))
         for macro in group.get("Macros", []) or []:
@@ -544,7 +544,7 @@ def find_conflicts(bindings):
     """
     by_chord = defaultdict(list)
     for b in bindings:
-        by_chord[b.chord].append(b)
+        by_chord[b.match_chord()].append(b)
 
     hard, soft = {}, {}
     for c, group in by_chord.items():
@@ -572,12 +572,17 @@ def md_escape(text: str) -> str:
     return str(text).replace("|", "\\|").replace("\n", " ")
 
 
+def md_code(text: str) -> str:
+    """Inline code span that survives a backtick in the content."""
+    return "`` %s ``" % text if "`" in text else "`%s`" % text
+
+
 def render_table(bindings) -> str:
     lines = ["| Chord | Source | Scope | Global | Action | On |",
              "|---|---|---|---|---|---|"]
     for b in sorted(bindings, key=lambda x: x.sort_key()):
-        lines.append("| `%s` | %s | %s | %s | %s | %s |" % (
-            md_escape(b.chord), md_escape(b.source), md_escape(b.scope),
+        lines.append("| %s | %s | %s | %s | %s | %s |" % (
+            md_code(md_escape(b.chord)), md_escape(b.source), md_escape(b.scope),
             "yes" if b.is_global else "no",
             md_escape(b.action), "yes" if b.enabled else "no"))
     return "\n".join(lines)
@@ -658,6 +663,17 @@ def main(argv=None):
             [Path(args.aerospace_config)] if args.aerospace_config else None)
     for app in args.menus:
         bindings += read_app_menus(app)
+
+    # The same override can appear in both ~/Library/Preferences and a sandbox
+    # container, so collapse exact duplicates before counting or comparing.
+    seen, unique = set(), []
+    for b in bindings:
+        k = b.dedup_key()
+        if k in seen:
+            continue
+        seen.add(k)
+        unique.append(b)
+    bindings = unique
 
     hard, soft = find_conflicts(bindings)
 

@@ -11,8 +11,8 @@ public final class TrayMenuModel: ObservableObject {
     /// Is "layouting" enabled
     @Published var isEnabled: Bool = true
     @Published var workspaces: [WorkspaceViewModel] = []
+    @Published var layoutSnapshots: [LayoutSnapshotViewModel] = []
     @Published var experimentalUISettings: ExperimentalUISettings = ExperimentalUISettings()
-    @Published var sponsorshipMessage: String = sponsorshipPrompts.randomElement().orDie()
     @Published var lastReloadConfigContainedWarnings: Bool = false
     @Published var axPermissionStatus: AxPermissionStatus = .waitingWithPrompt
 }
@@ -34,23 +34,31 @@ enum AxPermissionStatus: Equatable {
             return ($0.activeWorkspace == focus.workspace && sortedMonitors.count > 1 ? "*" : "") + activeWorkspaceName
         }
         .joined(separator: " │ ")
-    TrayMenuModel.shared.workspaces = Workspace.all.map {
-        let apps = $0.allLeafWindowsRecursive.map { $0.app.name?.takeIf { !$0.isEmpty } }.filterNotNil().toSet()
-        let dash = " - "
-        let suffix = switch true {
-            case !apps.isEmpty: dash + apps.sorted().joinTruncating(separator: ", ", length: 25)
-            case $0.isVisible: dash + $0.workspaceMonitor.name
-            default: ""
+    // Empty workspaces are noise in the menu, and 'persistent-workspaces' can keep a lot of them
+    // alive. The focused and visible ones stay so that you can always see where you are.
+    // Scratchpad workspaces are an implementation detail and never belong here
+    TrayMenuModel.shared.workspaces = Workspace.all
+        .filter { !$0.isScratchpad && (!$0.isEffectivelyEmpty || $0.isVisible || $0 == focus.workspace) }
+        .map {
+            let apps = $0.allLeafWindowsRecursive.map { $0.app.name?.takeIf { !$0.isEmpty } }.filterNotNil().toSet()
+            let dash = " - "
+            let suffix = switch true {
+                case !apps.isEmpty: dash + apps.sorted().joinTruncating(separator: ", ", length: 25)
+                case $0.isVisible: dash + $0.workspaceMonitor.name
+                default: ""
+            }
+            let hasFullscreenWindows = $0.allLeafWindowsRecursive.contains { $0.isFullscreen }
+            return WorkspaceViewModel(
+                name: $0.name,
+                suffix: suffix,
+                isFocused: focus.workspace == $0,
+                isEffectivelyEmpty: $0.isEffectivelyEmpty,
+                isVisible: $0.isVisible,
+                hasFullscreenWindows: hasFullscreenWindows,
+            )
         }
-        let hasFullscreenWindows = $0.allLeafWindowsRecursive.contains { $0.isFullscreen }
-        return WorkspaceViewModel(
-            name: $0.name,
-            suffix: suffix,
-            isFocused: focus.workspace == $0,
-            isEffectivelyEmpty: $0.isEffectivelyEmpty,
-            isVisible: $0.isVisible,
-            hasFullscreenWindows: hasFullscreenWindows,
-        )
+    TrayMenuModel.shared.layoutSnapshots = listLayoutSnapshots().map {
+        LayoutSnapshotViewModel(name: $0, shortcut: layoutSnapshotRestoreShortcut($0))
     }
     var items = sortedMonitors.map {
         let hasFullscreenWindows = $0.activeWorkspace.allLeafWindowsRecursive.contains { $0.isFullscreen }
@@ -68,6 +76,15 @@ enum AxPermissionStatus: Equatable {
         items.insert(mode, at: 0)
     }
     TrayMenuModel.shared.trayItems = items
+}
+
+struct LayoutSnapshotViewModel: Hashable {
+    let name: String
+    /// The keys that restore this snapshot, if any binding does. Includes the keys that enter the
+    /// binding mode first, so a snapshot bound inside a mode reads as 'alt-0 1'
+    let shortcut: String?
+
+    var label: String { shortcut.map { "\(name)   \($0)" } ?? name }
 }
 
 struct WorkspaceViewModel: Hashable {

@@ -1,3 +1,13 @@
+> **This is a personal fork, not the real thing.**
+> Upstream is [nikitabobko/AeroSpace](https://github.com/nikitabobko/AeroSpace) by Nikita Bobko, MIT
+> licensed. All the credit for AeroSpace belongs there. If you find it useful, and you will, please
+> [sponsor him](https://github.com/sponsors/nikitabobko).
+>
+> I've added four commands for my own use: `scratchpad`, `layout-snapshot`, `window-hints`, and
+> `sticky`. I've also trimmed a couple of things out of the menu bar to suit how I work. None of it
+> is offered as an improvement on upstream. See [dev-docs/fork-notes.md](dev-docs/fork-notes.md) for
+> what changed and why.
+
 # AeroSpace Beta [![Build](https://github.com/nikitabobko/AeroSpace/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/nikitabobko/AeroSpace/actions/workflows/build.yml)
 
 <img src="./resources/Assets.xcassets/AppIcon.appiconset/icon.png" width="40%" align="right">

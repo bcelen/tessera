@@ -41,14 +41,24 @@ public func menuBar(viewModel: TrayMenuModel) -> some Scene { // todo should it 
                 }
                 Divider()
             }
-            Button {
-                NSWorkspace.shared.open(URL(string: "https://github.com/sponsors/nikitabobko").orDie())
-                viewModel.sponsorshipMessage = sponsorshipPrompts.randomElement().orDie()
-            } label: {
-                Text("Sponsor AeroSpace on GitHub")
-                Text(viewModel.sponsorshipMessage)
+            if let token: RunSessionGuard = .isServerEnabled, !viewModel.layoutSnapshots.isEmpty {
+                Text("Layouts:")
+                ForEach(viewModel.layoutSnapshots, id: \.name) { snapshot in
+                    Button {
+                        Task.startUnstructured {
+                            try await runLightSession(.menuBarButton, token) {
+                                var args = LayoutSnapshotCmdArgs(rawArgs: [])
+                                args.action = .initialized(.restore)
+                                args.name = snapshot.name
+                                _ = await LayoutSnapshotCommand(args: args).run(.defaultEnv, .emptyStdin)
+                            }
+                        }
+                    } label: {
+                        Text(snapshot.label).font(.system(.body, design: .monospaced))
+                    }
+                }
+                Divider()
             }
-            Divider()
             Button(viewModel.isEnabled ? "Disable" : "Enable") {
                 Task.startUnstructured {
                     try await runLightSession(.menuBarButton, .forceRun) {
