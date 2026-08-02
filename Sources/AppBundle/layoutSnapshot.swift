@@ -114,21 +114,35 @@ func readLayoutSnapshot(_ url: URL) -> ResOrStr<LayoutSnapshot> {
 /// shows how to get to it. Returns nil when nothing is bound to it.
 ///
 /// A binding inside a non-main mode is prefixed with the keys that enter that mode, so a snapshot
-/// bound as `alt-0` then `1` reads as "alt-0 1".
+/// bound as `opt-0` then `1` reads as "opt-0 1".
 @MainActor
 func layoutSnapshotRestoreShortcut(_ name: String) -> String? {
     for (modeId, mode) in config.modes {
         for binding in mode.bindings.values where binding.restoresLayoutSnapshot(name) {
             if modeId == mainModeId {
-                return binding.descriptionWithKeyNotation
+                return displayNotation(binding.descriptionWithKeyNotation)
             }
             guard let entry = modeEntryShortcut(modeId) else {
-                return binding.descriptionWithKeyNotation
+                return displayNotation(binding.descriptionWithKeyNotation)
             }
-            return entry + " " + binding.descriptionWithKeyNotation
+            return displayNotation(entry) + " " + displayNotation(binding.descriptionWithKeyNotation)
         }
     }
     return nil
+}
+
+/// The config parser only accepts `alt`, because that is what upstream uses. The key on an Apple
+/// keyboard is labelled Option, so rewrite it for display. Purely cosmetic: nothing round-trips
+/// through this, and `alt-` remains the only spelling the config understands.
+private func displayNotation(_ notation: String) -> String {
+    notation
+        .split(separator: " ")
+        .map { chord in
+            chord.split(separator: "-", omittingEmptySubsequences: false)
+                .map { $0 == "alt" ? "opt" : String($0) }
+                .joined(separator: "-")
+        }
+        .joined(separator: " ")
 }
 
 @MainActor

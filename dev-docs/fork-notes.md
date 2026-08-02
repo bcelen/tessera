@@ -137,6 +137,31 @@ the scratchpad. Turning it off leaves it floating where it is.
 Because the tree position is not stable, sticky windows shouldn't be relied on in `layout-snapshot`
 or in scripts that walk the tree.
 
+## Menu bar
+
+Three changes in `MenuBar.swift` and `TrayMenuModel.swift`.
+
+The workspace list now skips empty workspaces, keeping the focused and visible ones so you can still
+see where you are. With eleven entries in `persistent-workspaces` the old list was mostly noise. It
+also skips scratchpad workspaces, which were leaking an implementation detail into the UI.
+
+A "Layouts:" section lists saved snapshots when any exist, and clicking one restores it. Each row
+shows the keys bound to it, resolved from `config.modes` at display time rather than hardcoded. A
+binding that lives inside a non-main mode is shown with the keys that enter the mode first, so a
+snapshot bound to `1` inside a mode entered by `alt-0` reads as "opt-0 1". See
+`layoutSnapshotRestoreShortcut` in `layoutSnapshot.swift`.
+
+Those rows print `opt` where the config says `alt`, via `displayNotation` in the same file. It is
+cosmetic only. The config parser still accepts `alt-` and nothing else, because that is upstream's
+spelling and changing it would break every existing config; the key is just labelled Option on the
+keyboard, so that is what the menu should say. Nothing round-trips through `displayNotation`, so it
+cannot feed a rewritten string back into a binding lookup.
+
+The "Sponsor AeroSpace on GitHub" item is removed, along with `sponsorshipPrompts.swift` and the
+model property, because periphery's unused-code scan fails otherwise. The credit and the sponsor
+link moved to the banner at the top of `README.md`. This is a personal-fork change and would never
+go upstream.
+
 ## Testing
 
 `./build-debug.sh && ./swift-test.sh` for the fast loop, `./test.sh` before committing.
