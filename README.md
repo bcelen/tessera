@@ -10,7 +10,7 @@
 
 # AeroSpace Beta [![Build](https://github.com/nikitabobko/AeroSpace/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/nikitabobko/AeroSpace/actions/workflows/build.yml)
 
-<img src="./resources/Assets.xcassets/AppIcon.appiconset/icon.png" width="40%" align="right">
+<img src="./resources/Assets.xcassets/AppIcon.appiconset/icon_ground_1024.png" width="40%" align="right">
 
 AeroSpace is an i3-like tiling window manager for macOS
 

@@ -7,16 +7,36 @@ Added: `scratchpad`, `layout-snapshot`, `window-hints`, `sticky`.
 
 ## Running it
 
-This fork is not installed as an app. It runs as the SPM debug binary:
+The repo lives at `~/dev/forgejo/aerospace-next`. It was called `AeroSpace` until the rename, so
+older shell history and aliases may still point at the old path.
+
+For a quick edit-and-try loop, run the SPM debug binary:
 
 ```
-cd ~/dev/forgejo/AeroSpace
+cd ~/dev/forgejo/aerospace-next
 ./run-debug.sh                # occupies the terminal
 # or, detached:
 nohup ./.debug/AeroSpaceApp > /tmp/aerospace.log 2>&1 &
 ```
 
-Nothing starts it at login. See "Open items" below.
+The debug binary can't start at login. It is unsigned and has no bundle identifier, so TCC has
+nothing to attach an Accessibility grant to. When Terminal launches it, Terminal is the responsible
+process and its own grant covers the child; launchd launching it directly gets nothing, and the app
+sits there without opening its socket. A launch agent was tried and removed for exactly this reason.
+
+For daily use, build the signed app instead:
+
+```
+./build-release.sh --skip-docs
+cp -r .release/AeroSpace.app /Applications/
+```
+
+`--skip-docs` is a flag added in this fork. Upstream's script always builds man pages and shell
+completions first, which need Ruby with bundler, Rust, and fish; the flag skips those and the
+packaging steps that consume their output, leaving `.release/AeroSpace.app` and `.release/aerospace`.
+It needs the self-signed `aerospace-codesign-certificate` described in `development.md`, and a clean
+git tree. With a real signing identity the Accessibility grant sticks to the certificate and survives
+rebuilds, and `start-at-login = true` works because an app bundle can register itself as a login item.
 
 Environment gotchas, all hit at least once:
 
@@ -162,6 +182,21 @@ model property, because periphery's unused-code scan fails otherwise. The credit
 link moved to the banner at the top of `README.md`. This is a personal-fork change and would never
 go upstream.
 
+## App icon
+
+`icons/` holds the source PNGs in two sets at seven sizes each. `ground` is dark tiles on a light
+field, `ink` is the inverse. Both carry one red tile.
+
+`resources/Assets.xcassets/AppIcon.appiconset/Contents.json` wires all ten macOS slots twice: the
+ground set as the default appearance, the ink set behind an `appearances` entry with
+`"appearance": "luminosity", "value": "dark"`. So the icon inverts with the system appearance, and a
+system too old to understand the key falls back to ground.
+
+Every slot has a real file at the exact pixel size rather than letting Xcode downscale one 1024
+master, which is why the 16 and 32 point versions stay legible.
+
+The upstream `icon.png` is no longer referenced.
+
 ## Testing
 
 `./build-debug.sh && ./swift-test.sh` for the fast loop, `./test.sh` before committing.
@@ -179,13 +214,6 @@ Two test traps, both hit:
 
 ## Open items
 
-- No autostart. The launch agent approach failed: launchd launches the bare binary directly, and an
-  unsigned executable with no bundle identifier has nothing for TCC to attach an Accessibility grant
-  to. When Terminal launches it, Terminal is the responsible process and its grant covers it. The
-  real fix is a signed build. Create the self-signed `aerospace-codesign-certificate` described in
-  `development.md`, then either sign the debug binary or run `build-release.sh`. The release script
-  also runs `build-docs.sh` and `build-shell-completion.sh`, which want Ruby, Rust, and fish, so
-  trimming those two lines for a personal build is the cheaper path.
 - `window-hints` should bind unused letters to `hide`, so any key exits the mode.
 - Scratchpad and sticky membership don't survive a restart. Both would need the same stable window
   identity that `layout-snapshot` uses for matching.
