@@ -17,6 +17,7 @@ Usage:
     python3 hotkey-inventory.py --format json
     python3 hotkey-inventory.py --conflicts-only
     python3 hotkey-inventory.py --menus Safari --menus "Visual Studio Code"
+    python3 hotkey-inventory.py --menus-all --menus-skip Xcode -o shortcuts.md
 
 Standard library only. No network. Reads, never writes to your configs.
 """
@@ -30,6 +31,7 @@ import plistlib
 import re
 import subprocess
 import sys
+import time
 from collections import defaultdict
 from dataclasses import dataclass, asdict
 from pathlib import Path
@@ -495,6 +497,24 @@ function run(argv) {
 AX_MODS = [(1, "-cmd"), (2, "shift"), (4, "opt"), (8, "ctrl")]
 
 
+def list_gui_apps():
+    """Names of running processes that have a menu bar.
+
+    "background only is false" is System Events' term for a process with a UI,
+    which filters out daemons, helpers and agents that have no menus to walk.
+    """
+    script = ('tell application "System Events" to get name of every process '
+              'whose background only is false')
+    try:
+        res = subprocess.run(["osascript", "-e", script],
+                             capture_output=True, text=True, timeout=30)
+    except Exception as exc:
+        print("warn: could not list running apps: %s" % exc, file=sys.stderr)
+        return []
+    names = [n.strip() for n in res.stdout.strip().split(",") if n.strip()]
+    return sorted(set(names))
+
+
 def read_app_menus(app_name: str):
     out = []
     try:
@@ -643,6 +663,10 @@ def main(argv=None):
                     help="skip the full table")
     ap.add_argument("--menus", action="append", default=[], metavar="APP",
                     help="also walk this running app's menu bar (repeatable, slow)")
+    ap.add_argument("--menus-all", action="store_true",
+                    help="walk every running app that has a menu bar (very slow)")
+    ap.add_argument("--menus-skip", action="append", default=[], metavar="APP",
+                    help="exclude an app from --menus-all (repeatable)")
     ap.add_argument("--skip", action="append", default=[], metavar="SOURCE",
                     choices=["macos", "appmenu", "km", "aerospace"],
                     help="skip a source")
@@ -661,8 +685,24 @@ def main(argv=None):
     if "aerospace" not in args.skip:
         bindings += read_aerospace(
             [Path(args.aerospace_config)] if args.aerospace_config else None)
-    for app in args.menus:
-        bindings += read_app_menus(app)
+    targets = list(args.menus)
+    if args.menus_all:
+        skip = {s.lower() for s in args.menus_skip}
+        targets = [a for a in list_gui_apps() if a.lower() not in skip]
+        if targets:
+            print("walking %d apps, expect %d-%d minutes: %s"
+                  % (len(targets), max(1, len(targets) // 2),
+                     max(2, len(targets) * 2), ", ".join(targets)),
+                  file=sys.stderr)
+        else:
+            print("no running apps with a menu bar were found", file=sys.stderr)
+    for i, app in enumerate(targets, 1):
+        started = time.time()
+        found = read_app_menus(app)
+        print("  [%d/%d] %-28s %3d shortcuts  %4.0fs"
+              % (i, len(targets), app, len(found), time.time() - started),
+              file=sys.stderr)
+        bindings += found
 
     # The same override can appear in both ~/Library/Preferences and a sandbox
     # container, so collapse exact duplicates before counting or comparing.

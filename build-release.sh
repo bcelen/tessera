@@ -4,10 +4,15 @@ source ./script/setup.sh
 
 build_version="0.0.0-SNAPSHOT"
 codesign_identity="aerospace-codesign-certificate"
+# --skip-docs builds just the app and the CLI. Man pages and shell completions need Ruby, Rust and
+# fish, and the distributable zip and brew casks need those outputs, so all of it is skipped
+# together. Enough for a personal install, not enough to cut a release.
+build_docs=1
 while test $# -gt 0; do
     case $1 in
         --build-version) build_version="$2"; shift 2;;
         --codesign-identity) codesign_identity="$2"; shift 2;;
+        --skip-docs) build_docs=0; shift 1;;
         *) echo "Unknown option $1" > /dev/stderr; exit 1 ;;
     esac
 done
@@ -16,8 +21,10 @@ done
 ### BUILD ###
 #############
 
-./build-docs.sh --release
-./build-shell-completion.sh
+if test $build_docs = 1; then
+    ./build-docs.sh --release
+    ./build-shell-completion.sh
+fi
 
 ./generate.sh
 ./script/check-uncommitted-files.sh
@@ -110,6 +117,13 @@ codesign -v .release/aerospace
 ############
 ### PACK ###
 ############
+
+if test $build_docs = 0; then
+    echo
+    echo "Built .release/AeroSpace.app and .release/aerospace"
+    echo "Packaging skipped because of --skip-docs"
+    exit 0
+fi
 
 mkdir -p ".release/AeroSpace-v$build_version/manpage" && cp .man/*.1 ".release/AeroSpace-v$build_version/manpage"
 cp -r ./legal ".release/AeroSpace-v$build_version/legal"
