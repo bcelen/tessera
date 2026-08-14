@@ -45,6 +45,23 @@ final class StickyCommandTest: XCTestCase {
         assertEquals(Workspace.get(byName: secondWorkspaceName).allLeafWindowsRecursive.map(\.windowId), [])
     }
 
+    /// A window that is both sticky and parked in a scratchpad must stay parked. Following the
+    /// monitor's active workspace would undo 'scratchpad move' on the very next refresh
+    func testStickyWindowStaysInTheScratchpad() async {
+        let workspace = twoWindowWorkspace()
+        assertEquals(Window.get(byId: 1).orDie().focusWindow(), true)
+        await parseCommand("sticky on").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        await parseCommand("scratchpad move --window-id 1").cmdOrDie.run(.defaultEnv, .emptyStdin)
+
+        assertEquals(Workspace.getScratchpad(defaultScratchpadName).allLeafWindowsRecursive.map(\.windowId), [1])
+        assertEquals(workspace.allLeafWindowsRecursive.map(\.windowId), [2])
+
+        // A refresh is what used to pull it back out
+        await parseCommand("workspace \(secondWorkspaceName)").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        assertEquals(Workspace.getScratchpad(defaultScratchpadName).allLeafWindowsRecursive.map(\.windowId), [1])
+        assertEquals(Workspace.get(byName: secondWorkspaceName).allLeafWindowsRecursive.map(\.windowId), [])
+    }
+
     func testStickyOffStopsFollowing() async {
         let workspace = twoWindowWorkspace()
         assertEquals(Window.get(byId: 1).orDie().focusWindow(), true)

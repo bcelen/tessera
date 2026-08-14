@@ -31,7 +31,12 @@ final class LayoutSnapshotCommandTest: XCTestCase {
         assertFail(layoutSnapshotUrl(""))
         assertFail(layoutSnapshotUrl("../../etc/passwd"))
         assertFail(layoutSnapshotUrl(".hidden"))
+        assertFail(layoutSnapshotUrl("-foo"))
+        assertFail(layoutSnapshotUrl("a\nb"))
         assertSucc(layoutSnapshotUrl("teaching"))
+        assertSucc(layoutSnapshotUrl("m-imperfect"))
+        // Letters are deliberately unrestricted, so Turkish names work
+        assertSucc(layoutSnapshotUrl("ödev"))
     }
 
     /// A round trip through the JSON model must preserve the shape of the tree

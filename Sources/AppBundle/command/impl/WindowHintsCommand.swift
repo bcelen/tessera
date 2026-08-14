@@ -28,8 +28,10 @@ struct WindowHintsCommand: Command {
         let workspaces = Workspace.all
             .filter { !$0.isScratchpad && (!args.visibleOnly || $0.isVisible) }
         let focusedWorkspace = focus.workspace
-        // The focused workspace goes first, so its windows get the home row
-        let ordered = workspaces.sorted { lhs, _ in lhs == focusedWorkspace }
+        // The focused workspace goes first, so its windows get the home row. Partition rather than
+        // sort: 'sorted { lhs, _ in lhs == focused }' ignores its right operand and isn't a strict
+        // weak ordering, which Swift's sort is entitled to trap on
+        let ordered = workspaces.filter { $0 == focusedWorkspace } + workspaces.filter { $0 != focusedWorkspace }
 
         var hints: [WindowHint] = []
         for workspace in ordered {

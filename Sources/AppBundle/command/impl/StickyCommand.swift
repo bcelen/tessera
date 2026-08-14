@@ -9,7 +9,12 @@ import Common
 /// invisible ones.
 @MainActor
 func syncStickyWindows() {
-    let sticky = Workspace.all.flatMap { $0.allLeafWindowsRecursive }.filter { $0.isSticky }
+    // Windows parked in a scratchpad are deliberately hidden. Following the monitor's active
+    // workspace would drag them back into view on the next refresh, undoing 'scratchpad move'
+    let sticky = Workspace.all
+        .filter { !$0.isScratchpad }
+        .flatMap { $0.allLeafWindowsRecursive }
+        .filter { $0.isSticky }
     if sticky.isEmpty { return }
     for window in sticky {
         // Follow the monitor the window sits on, not the focused one, otherwise a sticky window

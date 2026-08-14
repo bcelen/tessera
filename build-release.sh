@@ -30,7 +30,7 @@ fi
 ./script/check-uncommitted-files.sh
 ./generate.sh --build-version "$build_version" --codesign-identity "$codesign_identity" --generate-git-hash
 
-swift build -c release --arch arm64 --arch x86_64 --product aerospace -Xswiftc -warnings-as-errors # CLI
+swift build -c release --arch arm64 --arch x86_64 --product aerospace-next -Xswiftc -warnings-as-errors # CLI
 
 # todo: make xcodebuild use the same toolchain as swift
 # toolchain="$(plutil -extract CFBundleIdentifier raw ~/Library/Developer/Toolchains/swift-6.1-RELEASE.xctoolchain/Info.plist)"
@@ -47,7 +47,7 @@ cd ./xcode
     xcode_configuration="Release"
     xcodebuild -version
     xcodebuild-pretty ../.release/xcodebuild.log clean build \
-        -scheme AeroSpace \
+        -scheme AeroSpaceNext \
         -destination "generic/platform=macOS" \
         -configuration "$xcode_configuration" \
         -derivedDataPath .xcode-build
@@ -55,38 +55,38 @@ cd -
 
 git checkout .
 
-cp -r "xcode/.xcode-build/Build/Products/$xcode_configuration/AeroSpace.app" .release
-cp -r .build/apple/Products/Release/aerospace .release
+cp -r "xcode/.xcode-build/Build/Products/$xcode_configuration/AeroSpace Next.app" .release
+cp -r .build/apple/Products/Release/aerospace-next .release
 
 ################
 ### SIGN CLI ###
 ################
 
-codesign -s "$codesign_identity" .release/aerospace
+codesign -s "$codesign_identity" .release/aerospace-next
 
 ################
 ### VALIDATE ###
 ################
 
 expected_layout=$(cat <<EOF
-.release/AeroSpace.app
-.release/AeroSpace.app/Contents
-.release/AeroSpace.app/Contents/_CodeSignature
-.release/AeroSpace.app/Contents/_CodeSignature/CodeResources
-.release/AeroSpace.app/Contents/MacOS
-.release/AeroSpace.app/Contents/MacOS/AeroSpace
-.release/AeroSpace.app/Contents/Resources
-.release/AeroSpace.app/Contents/Resources/default-config.toml
-.release/AeroSpace.app/Contents/Resources/AppIcon.icns
-.release/AeroSpace.app/Contents/Resources/Assets.car
-.release/AeroSpace.app/Contents/Info.plist
-.release/AeroSpace.app/Contents/PkgInfo
+.release/AeroSpace Next.app
+.release/AeroSpace Next.app/Contents
+.release/AeroSpace Next.app/Contents/_CodeSignature
+.release/AeroSpace Next.app/Contents/_CodeSignature/CodeResources
+.release/AeroSpace Next.app/Contents/MacOS
+.release/AeroSpace Next.app/Contents/MacOS/AeroSpace Next
+.release/AeroSpace Next.app/Contents/Resources
+.release/AeroSpace Next.app/Contents/Resources/default-config.toml
+.release/AeroSpace Next.app/Contents/Resources/AppIcon.icns
+.release/AeroSpace Next.app/Contents/Resources/Assets.car
+.release/AeroSpace Next.app/Contents/Info.plist
+.release/AeroSpace Next.app/Contents/PkgInfo
 EOF
 )
 
-if test "$expected_layout" != "$(find .release/AeroSpace.app)"; then
+if test "$expected_layout" != "$(find ".release/AeroSpace Next.app")"; then
     echo "!!! Expect/Actual layout don't match !!!"
-    find .release/AeroSpace.app
+    find ".release/AeroSpace Next.app"
     exit 1
 fi
 
@@ -105,14 +105,14 @@ check-contains-hash() {
     fi
 }
 
-check-universal-binary .release/AeroSpace.app/Contents/MacOS/AeroSpace
-check-universal-binary .release/aerospace
+check-universal-binary ".release/AeroSpace Next.app/Contents/MacOS/AeroSpace Next"
+check-universal-binary .release/aerospace-next
 
-check-contains-hash .release/AeroSpace.app/Contents/MacOS/AeroSpace
-check-contains-hash .release/aerospace
+check-contains-hash ".release/AeroSpace Next.app/Contents/MacOS/AeroSpace Next"
+check-contains-hash .release/aerospace-next
 
-codesign -v .release/AeroSpace.app
-codesign -v .release/aerospace
+codesign -v ".release/AeroSpace Next.app"
+codesign -v .release/aerospace-next
 
 ############
 ### PACK ###
@@ -120,7 +120,7 @@ codesign -v .release/aerospace
 
 if test $build_docs = 0; then
     echo
-    echo "Built .release/AeroSpace.app and .release/aerospace"
+    echo "Built '.release/AeroSpace Next.app' and .release/aerospace-next"
     echo "Packaging skipped because of --skip-docs"
     exit 0
 fi
@@ -129,8 +129,8 @@ mkdir -p ".release/AeroSpace-v$build_version/manpage" && cp .man/*.1 ".release/A
 cp -r ./legal ".release/AeroSpace-v$build_version/legal"
 cp -r .shell-completion ".release/AeroSpace-v$build_version/shell-completion"
 cd .release
-    mkdir -p "AeroSpace-v$build_version/bin" && cp -r aerospace "AeroSpace-v$build_version/bin"
-    cp -r AeroSpace.app "AeroSpace-v$build_version"
+    mkdir -p "AeroSpace-v$build_version/bin" && cp -r aerospace-next "AeroSpace-v$build_version/bin"
+    cp -r "AeroSpace Next.app" "AeroSpace-v$build_version"
     zip -r "AeroSpace-v$build_version.zip" "AeroSpace-v$build_version"
 cd -
 

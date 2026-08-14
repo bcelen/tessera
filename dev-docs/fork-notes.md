@@ -28,12 +28,12 @@ For daily use, build the signed app instead:
 
 ```
 ./build-release.sh --skip-docs
-cp -r .release/AeroSpace.app /Applications/
+cp -r ".release/AeroSpace Next.app" /Applications/
 ```
 
 `--skip-docs` is a flag added in this fork. Upstream's script always builds man pages and shell
 completions first, which need Ruby with bundler, Rust, and fish; the flag skips those and the
-packaging steps that consume their output, leaving `.release/AeroSpace.app` and `.release/aerospace`.
+packaging steps that consume their output, leaving `.release/AeroSpace Next.app` and `.release/aerospace-next`.
 It needs the self-signed `aerospace-codesign-certificate` described in `development.md`, and a clean
 git tree. With a real signing identity the Accessibility grant sticks to the certificate and survives
 rebuilds, and `start-at-login = true` works because an app bundle can register itself as a login item.
@@ -102,7 +102,7 @@ The remaining sharp edge: don't park the terminal you are driving from.
 
 ## layout-snapshot
 
-Save a workspace's tiling tree to `~/.local/state/aerospace/layouts/<name>.json`, restore it later.
+Save a workspace's tiling tree to `~/.local/state/aerospace-next/layouts/<name>.json`, restore it later.
 
 Per window it records the app bundle id, app name, and window title. Per container, the orientation,
 the layout, and each child's share of its parent as a fraction, so proportions survive a move to a
@@ -112,11 +112,15 @@ meaningless until the parent's own weight is final.
 Decisions, all of which were explicit choices and are reversible:
 
 - Restore never launches anything. Slots with no matching window collapse.
-- Matching is by bundle id, preferring an exact window-title match, falling back to any unused
-  window of that app.
 - Restore considers windows on the target workspace first, then windows anywhere else. This is what
   makes it useful after a restart, and it also means restoring mid-task yanks windows off other
   workspaces.
+- Matching is tried in three steps: the recorded `windowId`, then an exact title match, then the
+  first unused window of that app. The window id is exact but only within the session that took the
+  snapshot, since ids don't survive a restart; a stale one simply fails to resolve and falls through.
+  After a restart, two windows of the same app sharing a title are genuinely indistinguishable and
+  get assigned positionally, first unused window to first slot in DFS order. Deterministic, but it
+  can put the wrong browser window in the wrong pane.
 - Only the tiling tree. Floating windows, fullscreen state, and scratchpad windows are left alone.
 
 `save` and `restore` refuse to operate on a scratchpad workspace. Saving one produced an empty
@@ -137,7 +141,7 @@ Hint letters are handed out home row first, focused workspace first, capped at 2
 
 Known rough edge: only the hint letters and `esc` are bound, so any other key does nothing and you
 stay in the mode with no feedback. Reloading the config while the panel is open also strands you
-there. `aerospace mode main` is the escape hatch. The fix is to bind every remaining letter to
+there. `aerospace-next mode main` is the escape hatch. The fix is to bind every remaining letter to
 `hide`; not done yet.
 
 ## sticky
@@ -181,6 +185,47 @@ The "Sponsor AeroSpace on GitHub" item is removed, along with `sponsorshipPrompt
 model property, because periphery's unused-code scan fails otherwise. The credit and the sponsor
 link moved to the banner at the top of `README.md`. This is a personal-fork change and would never
 go upstream.
+
+## Identity
+
+The fork has its own identity, so it can coexist with upstream AeroSpace rather than fighting it for
+the same bundle id, socket, config file, and state directory.
+
+| | upstream | this fork |
+|---|---|---|
+| Bundle id | `bobko.aerospace` | `bogac.aerospace-next` |
+| Debug bundle id | `bobko.aerospace.debug` | `bogac.aerospace-next.debug` |
+| App name | `AeroSpace` | `AeroSpace Next` |
+| CLI | `aerospace` | `aerospace-next` |
+| Config | `~/.aerospace.toml` | `~/.aerospace-next.toml` |
+| XDG config | `~/.config/aerospace/aerospace.toml` | `~/.config/aerospace-next/aerospace-next.toml` |
+| Socket | `/tmp/bobko.aerospace-<user>.sock` | `/tmp/bogac.aerospace-next-<user>.sock` |
+| Snapshots | n/a | `~/.local/state/aerospace-next/layouts` |
+
+The socket path and the Console log directory are both derived from the bundle id in
+`Sources/Common/appMetadata.swift`, so they follow automatically. The rest is spelled out in
+`Sources/AppBundle/config/ConfigFile.swift` (dotfile name and XDG path), `layoutSnapshotsDir()` in
+`Sources/AppBundle/layoutSnapshot.swift`, `Package.swift` (CLI product name), and `xcode/project.yml`
+(project name, target, product name, both bundle ids).
+
+The debug identity is kept separate from release on purpose. `toggleReleaseServerIfDebug` uses it to
+pause the installed release app while a debug build is running, so `./run-debug.sh` doesn't fight
+`/Applications/AeroSpace Next.app` for control of your windows.
+
+One deliberate leftover: `cleanupPlistFromPrevVersions()` in `config/startAtLogin.swift` still deletes
+`~/Library/LaunchAgents/bobko.aerospace.plist`. That's upstream's legacy artifact, and removing a
+stale file from an old install is harmless.
+
+The app name contains a space, so the release build produces `AeroSpace Next.app`. Every path in
+`build-release.sh` that touches it is quoted; if you edit that script, keep the quotes.
+
+Not renamed, on purpose: everything downstream of the release zip. `script/build-brew-cask.sh`,
+`script/publish-release.sh`, `install-from-sources.sh`, and the GitHub workflow still generate and
+publish upstream's `aerospace` cask against `nikitabobko/tap`. None of it runs in the personal
+workflow, which stops at `build-release.sh --skip-docs` plus a copy into `/Applications`, and fixing
+it properly would mean inventing a Homebrew tap that doesn't exist. If you ever run
+`install-from-sources.sh`, expect it to fail on paths like `AeroSpace.app` that the build no longer
+produces.
 
 ## App icon
 

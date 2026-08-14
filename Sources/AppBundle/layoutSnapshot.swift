@@ -30,6 +30,9 @@ struct SnapshotNode: Codable {
     var appBundleId: String?
     var appName: String?
     var windowTitle: String?
+    /// Only meaningful while the same AeroSpace session is running. Window ids are not stable across
+    /// a restart, so this is tried first and then ignored when it doesn't resolve
+    var windowId: UInt32?
 }
 
 extension SnapshotNode {
@@ -50,6 +53,7 @@ extension SnapshotNode {
             appBundleId: window.app.rawAppBundleId,
             appName: window.app.name,
             windowTitle: title,
+            windowId: window.windowId,
         )
     }
 
@@ -67,15 +71,21 @@ extension Orientation {
 func layoutSnapshotsDir() -> URL {
     let stateHome = ProcessInfo.processInfo.environment["XDG_STATE_HOME"].map { URL(filePath: $0) }
         ?? FileManager.default.homeDirectoryForCurrentUser.appending(path: ".local/state/")
-    return stateHome.appending(path: "aerospace").appending(path: "layouts")
+    return stateHome.appending(path: "aerospace-next").appending(path: "layouts")
 }
 
 func layoutSnapshotUrl(_ name: String) -> ResOrStr<URL> {
     if name.isEmpty {
         return .failure("Snapshot name must not be empty")
     }
-    if name.contains("/") || name.hasPrefix(".") {
-        return .failure("Snapshot name \(name.singleQuoted) must not contain '/' or start with '.'")
+    // Reject what actually breaks: path traversal, a leading dot hiding the file, a leading dash
+    // that reads as a flag, and control characters that would mangle 'list' output and menu labels.
+    // Letters stay unrestricted on purpose, so that Turkish names work
+    if name.contains("/") || name.contains(":") || name.hasPrefix(".") || name.hasPrefix("-") {
+        return .failure("Snapshot name \(name.singleQuoted) must not contain '/' or ':', or start with '.' or '-'")
+    }
+    if name.rangeOfCharacter(from: .controlCharacters) != nil || name.rangeOfCharacter(from: .newlines) != nil {
+        return .failure("Snapshot name \(name.singleQuoted) must not contain control characters")
     }
     return .success(layoutSnapshotsDir().appending(path: name + ".json"))
 }

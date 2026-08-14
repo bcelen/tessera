@@ -10,11 +10,11 @@ rm -rf .shell-completion && mkdir -p \
     .shell-completion/bash
 
 ./.deps/cargo-root/bin/complgen aot ./grammar/commands-bnf-grammar.txt \
-    --zsh-script .shell-completion/zsh/_aerospace \
-    --fish-script .shell-completion/fish/aerospace.fish \
-    --bash-script .shell-completion/bash/aerospace
+    --zsh-script .shell-completion/zsh/_aerospace-next \
+    --fish-script .shell-completion/fish/aerospace-next.fish \
+    --bash-script .shell-completion/bash/aerospace-next
 
 # Check basic syntax
-zsh -c 'autoload -Uz compinit; compinit; source ./.shell-completion/zsh/_aerospace'
-fish -c 'source ./.shell-completion/fish/aerospace.fish'
-bash -c 'source ./.shell-completion/bash/aerospace'
+zsh -c 'autoload -Uz compinit; compinit; source ./.shell-completion/zsh/_aerospace-next'
+fish -c 'source ./.shell-completion/fish/aerospace-next.fish'
+bash -c 'source ./.shell-completion/bash/aerospace-next'

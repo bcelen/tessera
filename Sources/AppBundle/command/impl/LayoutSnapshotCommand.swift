@@ -140,6 +140,11 @@ struct LayoutSnapshotCommand: Command {
     @MainActor
     private func match(_ node: SnapshotNode, pool: [Window], titles: [UInt32: String], used: Set<UInt32>) -> Window? {
         let candidates = pool.filter { !used.contains($0.windowId) && isSameApp($0, node) }
+        // Exact within the session that took the snapshot. Window ids don't survive a restart, so a
+        // stale id simply fails to resolve and we fall through
+        if let windowId = node.windowId, let exact = candidates.first(where: { $0.windowId == windowId }) {
+            return exact
+        }
         if let title = node.windowTitle, !title.isEmpty,
            let exact = candidates.first(where: { titles[$0.windowId] == title })
         {

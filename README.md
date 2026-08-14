@@ -4,7 +4,8 @@
 > [sponsor him](https://github.com/sponsors/nikitabobko).
 >
 > I've added four commands for my own use: `scratchpad`, `layout-snapshot`, `window-hints`, and
-> `sticky`. I've also trimmed a couple of things out of the menu bar to suit how I work. None of it
+> `sticky`. It installs as `AeroSpace Next.app` with its own bundle id, config file and state
+> directory, so it coexists with upstream rather than replacing it. I've also trimmed a couple of things out of the menu bar to suit how I work. None of it
 > is offered as an improvement on upstream. See [dev-docs/fork-notes.md](dev-docs/fork-notes.md) for
 > what changed and why.
 
