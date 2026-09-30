@@ -1,0 +1,65 @@
+= aerospace-place(1)
+include::util/man-attributes.adoc[]
+// tag::purpose[]
+:manpurpose: Put a window at a fixed position and size
+// end::purpose[]
+:manname: aerospace-place
+
+// =========================================================== Synopsis
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace place [-h|--help] [--window-id <window-id>] --x <x> --y <y> [--width <width> --height <height>]
+aerospace place [-h|--help] [--window-id <window-id>] --width <width> --height <height>
+
+// end::synopsis[]
+
+// =========================================================== Description
+== Description
+
+// tag::body[]
+{manpurpose}
+
+Coordinates are relative to the visible area of the window's monitor, which is the screen minus the
+menu bar and the Dock, with (0, 0) at its top-left corner.
+Every value is either a number of points or a percentage of that area, so
+`place --x 0 --y 50% --width 100% --height 50%` means the lower half of whichever display the window
+is on, whatever its resolution.
+
+Placing a tiled window makes it floating first.
+A tiled window's frame belongs to the layout and would be overwritten on the next refresh, while a
+floating window keeps whatever frame it is given.
+
+Give a position, a size, or both.
+With only a size the window keeps its position, and with only a position it keeps its size.
+
+It pairs naturally with `on-window-detected`, so that an app always opens in the same place.
+
+// =========================================================== Options
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+--window-id <window-id>:: Act on the specified window instead of the focused one
+--x <x>:: Distance of the window's left edge from the left of the visible area. Points, or a percentage
+--y <y>:: Distance of the window's top edge from the top of the visible area. Points, or a percentage
+--width <width>:: Window width. Points, or a percentage of the visible area's width
+--height <height>:: Window height. Points, or a percentage of the visible area's height
+
+// =========================================================== Examples
+== Examples
+
+[source,toml]
+----
+# Snap the focused window into the lower half
+alt-shift-p = 'place --x 0 --y 50% --width 100% --height 50%'
+
+# Calculator always opens in the bottom-right corner
+[[on-window-detected]]
+if.app-id = 'com.apple.calculator'
+run = 'place --x 80% --y 60% --width 20% --height 40%'
+----
+
+// end::body[]
+
+// =========================================================== Footer
+include::util/man-footer.adoc[]

@@ -23,7 +23,7 @@ would write:
 
 ## What's different
 
-Four commands upstream doesn't have.
+Five commands upstream doesn't have.
 
 **`scratchpad`** parks a window out of sight and summons it back with one key, i3 style. The window
 keeps running and reappears floating, in the same relative position it had when you hid it. Several
@@ -57,6 +57,14 @@ workspace is active on its monitor, so it always has exactly one parent.
 
 ```
 sticky toggle
+```
+
+**`place`** puts a window at a fixed position and size, in points or as a percentage of the screen,
+so an app can always open in the same spot or be snapped back there with one key. Upstream leaves
+floating geometry alone entirely.
+
+```
+place --x 0 --y 50% --width 100% --height 50%     # the lower half
 ```
 
 Smaller changes. The menu bar lists saved layouts with the keys that restore them and hides empty
@@ -99,7 +107,7 @@ rebuilds, and `start-at-login = true` works.
 ## Layout
 
 ```
-Sources/            upstream's code, plus the four commands
+Sources/            upstream's code, plus the five commands
 docs/               upstream's asciidoc, plus one page per new command
 dev-docs/           architecture and development notes
   fork-notes.md     why this fork does what it does, and the traps

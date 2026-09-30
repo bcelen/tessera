@@ -1,9 +1,9 @@
 # Fork notes
 
-Personal fork of AeroSpace with four commands that upstream doesn't have. Written down so that
+Personal fork of AeroSpace with five commands that upstream doesn't have. Written down so that
 neither I nor a future Claude session has to reconstruct the reasoning.
 
-Added: `scratchpad`, `layout-snapshot`, `window-hints`, `sticky`.
+Added: `scratchpad`, `layout-snapshot`, `window-hints`, `sticky`, `place`.
 
 ## Running it
 
@@ -160,6 +160,28 @@ the scratchpad. Turning it off leaves it floating where it is.
 
 Because the tree position is not stable, sticky windows shouldn't be relied on in `layout-snapshot`
 or in scripts that walk the tree.
+
+## place
+
+Put a window at a fixed position and size. Upstream deliberately manages only tiled geometry; a
+floating window keeps whatever frame it last had, which is exactly why a frame set here sticks.
+
+Coordinates are relative to the visible area of the window's monitor (below the menu bar, clear of
+the Dock), and every value is points or a percentage. Percentages are the point: `--y 50%` means the
+middle of whichever display the window is on, so a rule written on the Mac Studio still makes sense
+on a projector.
+
+Decisions:
+
+- Placing a tiled window floats it first. Otherwise the next layout pass would overwrite the frame.
+- `--x`/`--y` and `--width`/`--height` each come as a pair. Accepting `--x` alone would need the
+  window's current frame, which is an async Accessibility read; pairs keep the command synchronous,
+  and `setAxFrame` already takes nil for "leave this half alone".
+- The size is written to `lastFloatingSize` too, so the window comes back at that size after being
+  hidden in a corner by a workspace switch.
+
+`TestWindow` now overrides `setAxFrame` to record the frame. Before this, any test path reaching
+`setAxFrame` would have hit `die("Not implemented")`, which is why nothing tested geometry.
 
 ## Menu bar
 

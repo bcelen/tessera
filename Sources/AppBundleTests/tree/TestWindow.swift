@@ -42,4 +42,18 @@ final class TestWindow: Window, CustomStringConvertible {
     }
 
     override func isMacosFullscreen(_ cm: CancellationMode) async throws -> Bool { isMacosFullscreenForTest }
+
+    /// Records the frame instead of talking to Accessibility, so tests can assert on it. A nil
+    /// argument keeps that half of the frame, matching what macOS does
+    override func setAxFrame(_ topLeft: CGPoint?, _ size: CGSize?) {
+        let current = _rect ?? Rect(topLeftX: 0, topLeftY: 0, width: 0, height: 0)
+        _rect = Rect(
+            topLeftX: topLeft?.x ?? current.topLeftX,
+            topLeftY: topLeft?.y ?? current.topLeftY,
+            width: size?.width ?? current.width,
+            height: size?.height ?? current.height,
+        )
+    }
+
+    var rectForTests: Rect? { _rect }
 }

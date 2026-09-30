@@ -75,6 +75,8 @@ aerospace -h;
     | move-workspace-to-monitor [--wrap-around] (left|down|up|right|next|prev) [--wrap-around]
     | move-workspace-to-monitor [--wrap-around] <monitor_pattern>... [--wrap-around]
 
+    | place [--window-id <window_id>|--x <place_length>|--y <place_length>|--width <place_length>|--height <place_length>]...
+
     | reload-config [--no-gui | --dry-run]...
 
     | resize [--window-id <window_id>] (smart|smart-opposite|width|height) [+|-]<number> [--window-id <window_id>]
@@ -138,6 +140,7 @@ aerospace -h;
 <workspace> ::= {{{ aerospace list-workspaces --monitor all --empty no }}};
 <number> ::= {{{ true }}};
 <scratchpad_name> ::= {{{ true }}};
+<place_length> ::= {{{ true }}};
 <snapshot_name> ::= {{{ aerospace layout-snapshot list }}};
 <monitor_pattern> ::= {{{ true }}};
 <layouts> ::= h_tiles|v_tiles|h_accordion|v_accordion|tiles|accordion|horizontal|vertical|tiling|floating;
