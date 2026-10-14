@@ -7,7 +7,7 @@ Reads four sources that actually live on disk:
   1. macOS system shortcuts   com.apple.symbolichotkeys
   2. Menu overrides you set   NSUserKeyEquivalents in per-app plists
   3. Keyboard Maestro         Keyboard Maestro Macros.plist
-  4. AeroSpace                ~/.aerospace-next.toml or ~/.config/aerospace/aerospace.toml
+  4. AeroSpace                ~/.tessera.toml or ~/.config/aerospace/aerospace.toml
 
 Optionally walks a running app's menu bar over the Accessibility API (--menus).
 
@@ -381,8 +381,8 @@ def read_keyboard_maestro(path: Path = KM_PLIST):
 # --------------------------------------------------------------------------
 
 AEROSPACE_PATHS = [
-    HOME / ".aerospace-next.toml",
-    HOME / ".config/aerospace-next/aerospace-next.toml",
+    HOME / ".tessera.toml",
+    HOME / ".config/tessera/tessera.toml",
 ]
 
 SECTION_RE = re.compile(r"^\s*\[mode\.([A-Za-z0-9_-]+)\.binding\]\s*$")

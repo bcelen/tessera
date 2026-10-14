@@ -22,7 +22,7 @@ aerospace layout-snapshot [-h|--help] list
 {manpurpose}
 
 `save` walks the tiling tree of the target workspace and writes it to
-`$XDG_STATE_HOME/aerospace-next/layouts/<name>.json`, defaulting to `~/.local/state/aerospace-next/layouts/<name>.json`.
+`$XDG_STATE_HOME/tessera/layouts/<name>.json`, defaulting to `~/.local/state/tessera/layouts/<name>.json`.
 Recorded per window: the app bundle id, the app name, and the window title.
 Recorded per container: the orientation, the layout, and each child's share of its parent.
 

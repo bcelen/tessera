@@ -37,6 +37,7 @@ private let debounceDelay: Duration = .milliseconds(200)
             try await Task.sleep(for: debounceDelay)
             if let token: RunSessionGuard = .isServerEnabled {
                 try await runLightSession(.configAutoReload, token) {
+                    defer { syncConfigFileWatcher() }
                     _ = await reloadConfig_nonCancellable()
                 }
             }

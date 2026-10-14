@@ -71,7 +71,7 @@ extension Orientation {
 func layoutSnapshotsDir() -> URL {
     let stateHome = ProcessInfo.processInfo.environment["XDG_STATE_HOME"].map { URL(filePath: $0) }
         ?? FileManager.default.homeDirectoryForCurrentUser.appending(path: ".local/state/")
-    return stateHome.appending(path: "aerospace-next").appending(path: "layouts")
+    return stateHome.appending(path: "tessera").appending(path: "layouts")
 }
 
 func layoutSnapshotUrl(_ name: String) -> ResOrStr<URL> {

@@ -45,11 +45,15 @@ struct ResizeCommand: Command {
         }
 
         guard let childDiff = diff.div(parent.children.count - 1) else { return .fail }
-        parent.children.lazy
-            .filter { $0 != node }
-            .forEach { $0.setWeight(parent.orientation, $0.getWeight(parent.orientation) - childDiff) }
-
-        node.setWeight(orientation, node.getWeight(orientation) + diff)
+        let updates = parent.children.map { child in
+            (child, child.getWeight(orientation) + (child == node ? diff : -childDiff))
+        }
+        guard updates.allSatisfy({ $0.1.isFinite && $0.1 > 0 }) else {
+            return .fail(io.err("Resize would make a tile non-positive"))
+        }
+        for (child, weight) in updates {
+            child.setWeight(orientation, weight)
+        }
         return .succ
     }
 }

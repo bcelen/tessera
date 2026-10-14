@@ -172,4 +172,21 @@ final class WorkspaceCommandTest: XCTestCase {
         assertEquals(result.exitCode.rawValue, 0)
         assertEquals(focus.workspace.name, "b")
     }
+
+    /// Relative navigation used to include internal scratchpad workspaces, so 'workspace next' could
+    /// land on one and expose every parked window
+    func testRelativeNavigationSkipsScratchpads() async {
+        let first = Workspace.get(byName: "w1").apply { TestWindow.new(id: 1, parent: $0.rootTilingContainer) }
+        Workspace.get(byName: "w2").apply { TestWindow.new(id: 2, parent: $0.rootTilingContainer) }
+        TestWindow.new(id: 3, parent: Workspace.getScratchpad(defaultScratchpadName).floatingWindowsContainer)
+        assertEquals(first.focusWorkspace(), true)
+
+        // Walk the whole ring in both directions; the order doesn't matter, only where we stop
+        for direction in ["next", "prev"] {
+            for _ in 0 ..< 4 {
+                await parseCommand("workspace --wrap-around \(direction)").cmdOrDie.run(.defaultEnv, .emptyStdin)
+                assertEquals(focus.workspace.isScratchpad, false)
+            }
+        }
+    }
 }

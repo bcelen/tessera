@@ -57,9 +57,7 @@ enum AxPermissionStatus: Equatable {
                 hasFullscreenWindows: hasFullscreenWindows,
             )
         }
-    TrayMenuModel.shared.layoutSnapshots = listLayoutSnapshots().map {
-        LayoutSnapshotViewModel(name: $0, shortcut: layoutSnapshotRestoreShortcut($0))
-    }
+    scheduleLayoutSnapshotMenuRefresh()
     var items = sortedMonitors.map {
         let hasFullscreenWindows = $0.activeWorkspace.allLeafWindowsRecursive.contains { $0.isFullscreen }
         return TrayItem(
@@ -124,5 +122,30 @@ struct TrayItem: Hashable, Identifiable {
     }
     var id: String {
         return type.rawValue + name
+    }
+}
+
+@MainActor private var snapshotMenuRefreshTask: Task<Void, Never>?
+@MainActor private var snapshotMenuDirty = false
+
+@MainActor
+private func scheduleLayoutSnapshotMenuRefresh() {
+    snapshotMenuDirty = true
+    guard snapshotMenuRefreshTask == nil else { return }
+    snapshotMenuRefreshTask = Task.startUnstructured { @MainActor in
+        defer { snapshotMenuRefreshTask = nil }
+        while snapshotMenuDirty {
+            snapshotMenuDirty = false
+            let names = await Task.detached(priority: .utility) {
+                listLayoutSnapshots()
+            }.value
+            let items = names.map {
+                LayoutSnapshotViewModel(name: $0, shortcut: layoutSnapshotRestoreShortcut($0))
+            }
+            if items != TrayMenuModel.shared.layoutSnapshots {
+                TrayMenuModel.shared.layoutSnapshots = items
+            }
+            try? await Task.sleep(for: .seconds(1))
+        }
     }
 }

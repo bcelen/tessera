@@ -101,7 +101,7 @@ struct ScratchpadCommand: Command {
             ?? scratchpad.mostRecentWindowRecursive
             ?? scratchpad.anyLeafWindowRecursive
         guard let window else {
-            return noop(io, "Scratchpad '\(args.name)' is empty. Put a window there with 'aerospace-next scratchpad move'")
+            return noop(io, "Scratchpad '\(args.name)' is empty. Put a window there with 'tessera scratchpad move'")
         }
         let targetWorkspace = visibleWorkspace(for: window)
         if window.nodeWorkspace != targetWorkspace {

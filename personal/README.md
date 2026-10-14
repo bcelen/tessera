@@ -3,12 +3,12 @@
 My own setup. None of this is read by the window manager; it lives here so the repo root stays
 upstream's.
 
-**`aerospace.toml`** is the config I actually run. The live copy is `~/.aerospace-next.toml`; this is
+**`tessera.toml`** is the config I actually run. The live copy is `~/.tessera.toml`; this is
 the version-controlled one. After editing here:
 
 ```
-cp personal/aerospace.toml ~/.aerospace-next.toml
-aerospace-next reload-config
+cp personal/tessera.toml ~/.tessera.toml
+tessera reload-config
 ```
 
 Four rules organize the bindings. `alt` is where you go and what things look like. `ctrl` is windows:

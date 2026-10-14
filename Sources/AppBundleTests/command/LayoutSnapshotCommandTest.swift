@@ -65,4 +65,19 @@ final class LayoutSnapshotCommandTest: XCTestCase {
         assertEquals(decoded.root.children?.last?.parsedLayout, .accordion)
         assertEquals(decoded.root.children?.last?.children?.first?.windowTitle, "AeroSpace")
     }
+
+    /// Restore must never pull a window that macOS is hiding into a tile: a cmd-h'd app's window or a
+    /// native-fullscreen one would sit there invisible, holding a tile, until the app came back
+    func testHiddenWindowsAreNotRestorable() {
+        let workspace = Workspace.get(byName: name)
+        let tiled = TestWindow.new(id: 1, parent: workspace.rootTilingContainer)
+        let floating = TestWindow.new(id: 2, parent: workspace.floatingWindowsContainer)
+        let hiddenApp = TestWindow.new(id: 3, parent: workspace.macOsNativeHiddenAppsWindowsContainer)
+        let fullscreen = TestWindow.new(id: 4, parent: workspace.macOsNativeFullscreenWindowsContainer)
+
+        assertTrue(tiled.isRestorable)
+        assertTrue(floating.isRestorable)
+        assertFalse(hiddenApp.isRestorable)
+        assertFalse(fullscreen.isRestorable)
+    }
 }

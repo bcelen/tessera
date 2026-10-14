@@ -41,7 +41,7 @@ public func parsePlaceLength(_ raw: String) -> ResOrStr<PlaceLength> {
         }
         return .success(.fraction(percent / 100))
     }
-    guard let points = Double(raw), points >= 0 else {
+    guard let points = Double(raw), points.isFinite, points >= 0 else {
         return .failure("Can't parse '\(raw)'. Expected a non-negative number of points, or a percentage like 50%")
     }
     return .success(.points(points))

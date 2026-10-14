@@ -30,7 +30,7 @@ fi
 ./script/check-uncommitted-files.sh
 ./generate.sh --build-version "$build_version" --codesign-identity "$codesign_identity" --generate-git-hash
 
-swift build -c release --arch arm64 --arch x86_64 --product aerospace-next -Xswiftc -warnings-as-errors # CLI
+swift build -c release --arch arm64 --arch x86_64 --product tessera -Xswiftc -warnings-as-errors # CLI
 
 # todo: make xcodebuild use the same toolchain as swift
 # toolchain="$(plutil -extract CFBundleIdentifier raw ~/Library/Developer/Toolchains/swift-6.1-RELEASE.xctoolchain/Info.plist)"
@@ -47,7 +47,7 @@ cd ./xcode
     xcode_configuration="Release"
     xcodebuild -version
     xcodebuild-pretty ../.release/xcodebuild.log clean build \
-        -scheme AeroSpaceNext \
+        -scheme Tessera \
         -destination "generic/platform=macOS" \
         -configuration "$xcode_configuration" \
         -derivedDataPath .xcode-build
@@ -55,38 +55,38 @@ cd -
 
 git checkout .
 
-cp -r "xcode/.xcode-build/Build/Products/$xcode_configuration/AeroSpace Next.app" .release
-cp -r .build/apple/Products/Release/aerospace-next .release
+cp -r "xcode/.xcode-build/Build/Products/$xcode_configuration/Tessera.app" .release
+cp -r .build/apple/Products/Release/tessera .release
 
 ################
 ### SIGN CLI ###
 ################
 
-codesign -s "$codesign_identity" .release/aerospace-next
+codesign -s "$codesign_identity" .release/tessera
 
 ################
 ### VALIDATE ###
 ################
 
 expected_layout=$(cat <<EOF
-.release/AeroSpace Next.app
-.release/AeroSpace Next.app/Contents
-.release/AeroSpace Next.app/Contents/_CodeSignature
-.release/AeroSpace Next.app/Contents/_CodeSignature/CodeResources
-.release/AeroSpace Next.app/Contents/MacOS
-.release/AeroSpace Next.app/Contents/MacOS/AeroSpace Next
-.release/AeroSpace Next.app/Contents/Resources
-.release/AeroSpace Next.app/Contents/Resources/default-config.toml
-.release/AeroSpace Next.app/Contents/Resources/AppIcon.icns
-.release/AeroSpace Next.app/Contents/Resources/Assets.car
-.release/AeroSpace Next.app/Contents/Info.plist
-.release/AeroSpace Next.app/Contents/PkgInfo
+.release/Tessera.app
+.release/Tessera.app/Contents
+.release/Tessera.app/Contents/_CodeSignature
+.release/Tessera.app/Contents/_CodeSignature/CodeResources
+.release/Tessera.app/Contents/MacOS
+.release/Tessera.app/Contents/MacOS/Tessera
+.release/Tessera.app/Contents/Resources
+.release/Tessera.app/Contents/Resources/default-config.toml
+.release/Tessera.app/Contents/Resources/AppIcon.icns
+.release/Tessera.app/Contents/Resources/Assets.car
+.release/Tessera.app/Contents/Info.plist
+.release/Tessera.app/Contents/PkgInfo
 EOF
 )
 
-if test "$expected_layout" != "$(find ".release/AeroSpace Next.app")"; then
+if test "$expected_layout" != "$(find ".release/Tessera.app")"; then
     echo "!!! Expect/Actual layout don't match !!!"
-    find ".release/AeroSpace Next.app"
+    find ".release/Tessera.app"
     exit 1
 fi
 
@@ -105,14 +105,14 @@ check-contains-hash() {
     fi
 }
 
-check-universal-binary ".release/AeroSpace Next.app/Contents/MacOS/AeroSpace Next"
-check-universal-binary .release/aerospace-next
+check-universal-binary ".release/Tessera.app/Contents/MacOS/Tessera"
+check-universal-binary .release/tessera
 
-check-contains-hash ".release/AeroSpace Next.app/Contents/MacOS/AeroSpace Next"
-check-contains-hash .release/aerospace-next
+check-contains-hash ".release/Tessera.app/Contents/MacOS/Tessera"
+check-contains-hash .release/tessera
 
-codesign -v ".release/AeroSpace Next.app"
-codesign -v .release/aerospace-next
+codesign -v ".release/Tessera.app"
+codesign -v .release/tessera
 
 ############
 ### PACK ###
@@ -120,26 +120,16 @@ codesign -v .release/aerospace-next
 
 if test $build_docs = 0; then
     echo
-    echo "Built '.release/AeroSpace Next.app' and .release/aerospace-next"
+    echo "Built '.release/Tessera.app' and .release/tessera"
     echo "Packaging skipped because of --skip-docs"
     exit 0
 fi
 
-mkdir -p ".release/AeroSpace-v$build_version/manpage" && cp .man/*.1 ".release/AeroSpace-v$build_version/manpage"
-cp -r ./legal ".release/AeroSpace-v$build_version/legal"
-cp -r .shell-completion ".release/AeroSpace-v$build_version/shell-completion"
+mkdir -p ".release/Tessera-v$build_version/manpage" && cp .man/*.1 ".release/Tessera-v$build_version/manpage"
+cp -r ./legal ".release/Tessera-v$build_version/legal"
+cp -r .shell-completion ".release/Tessera-v$build_version/shell-completion"
 cd .release
-    mkdir -p "AeroSpace-v$build_version/bin" && cp -r aerospace-next "AeroSpace-v$build_version/bin"
-    cp -r "AeroSpace Next.app" "AeroSpace-v$build_version"
-    zip -r "AeroSpace-v$build_version.zip" "AeroSpace-v$build_version"
+    mkdir -p "Tessera-v$build_version/bin" && cp -r tessera "Tessera-v$build_version/bin"
+    cp -r "Tessera.app" "Tessera-v$build_version"
+    zip -r "Tessera-v$build_version.zip" "Tessera-v$build_version"
 cd -
-
-#################
-### Brew Cask ###
-#################
-for cask_name in aerospace aerospace-dev; do
-    ./script/build-brew-cask.sh \
-        --cask-name "$cask_name" \
-        --zip-uri ".release/AeroSpace-v$build_version.zip" \
-        --build-version "$build_version"
-done

@@ -50,10 +50,17 @@ struct ReloadConfigResult {
     }
     if parseResult.allowReloadConfig && !args.dryRun {
         TrayMenuModel.shared.lastReloadConfigContainedWarnings = containsWarnings
+        if activeMode == windowHintsModeId {
+            var hideArgs = WindowHintsCmdArgs(rawArgs: [])
+            hideArgs.action = .initialized(.hide)
+            _ = await WindowHintsCommand(args: hideArgs)
+                .run(.defaultEnv, CmdIoImpl.emptyStdinIgnoringOut)
+        }
         resetHotKeys()
         config = parseResult.config
         configUrl = result.configUrl
-        await activateMode_nonCancellable(activeMode)
+        let nextMode = activeMode.map { config.modes[$0] == nil ? mainModeId : $0 }
+        await activateMode_nonCancellable(nextMode)
         syncStartAtLogin()
         syncFocusFollowsMouse(config)
         syncConfigFileWatcher()

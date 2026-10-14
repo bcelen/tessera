@@ -163,4 +163,24 @@ final class ResizeCommandTest: XCTestCase {
         let result = await parseCommand("resize width +2").cmdOrDie.run(.defaultEnv, .emptyStdin)
         assertEquals(result.exitCode.rawValue, 2)
     }
+
+    /// Growing one tile by more than its sibling has used to drive the sibling's width negative
+    func testResizeThatWouldMakeATileNonPositiveIsRejected() async {
+        var window1: Window!
+        var window2: Window!
+        Workspace.get(byName: name).rootTilingContainer.apply {
+            window1 = TestWindow.new(id: 1, parent: $0, adaptiveWeight: 100)
+            window2 = TestWindow.new(id: 2, parent: $0, adaptiveWeight: 100)
+        }
+        _ = window1.focusWindow()
+
+        await parseCommand("resize width +300").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        // Rejected as a whole: nothing changes
+        assertEquals(window1.hWeight, 100)
+        assertEquals(window2.hWeight, 100)
+
+        await parseCommand("resize width -150").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        assertEquals(window1.hWeight, 100)
+        assertEquals(window2.hWeight, 100)
+    }
 }

@@ -1,7 +1,7 @@
 # Xcode project configuration. Managed by https://github.com/yonaskolb/XcodeGen
 # Xcode is only used to build the release App Bundle. Debug builds only use Swift Package Manager
 
-name: AeroSpaceNext
+name: Tessera
 
 packages:
   AeroSpacePackage:
@@ -12,7 +12,7 @@ configs:
   Release: release
 
 targets:
-  AeroSpaceNext:
+  Tessera:
     type: application
     platform: macOS
     deploymentTarget: "13.0"
@@ -36,11 +36,11 @@ targets:
         CODE_SIGN_IDENTITY: ${XCODEGEN_AEROSPACE_CODE_SIGN_IDENTITY}
       configs:
         Debug:
-          PRODUCT_NAME: AeroSpace Next-Debug
-          PRODUCT_BUNDLE_IDENTIFIER: bogac.aerospace-next.debug
+          PRODUCT_NAME: Tessera-Debug
+          PRODUCT_BUNDLE_IDENTIFIER: bogac.tessera.debug
         Release:
-          PRODUCT_NAME: AeroSpace Next
-          PRODUCT_BUNDLE_IDENTIFIER: bogac.aerospace-next
+          PRODUCT_NAME: Tessera
+          PRODUCT_BUNDLE_IDENTIFIER: bogac.tessera
           SWIFT_TREAT_WARNINGS_AS_ERRORS: YES
           GCC_TREAT_WARNINGS_AS_ERRORS: YES
     entitlements:

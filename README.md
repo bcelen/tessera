@@ -1,4 +1,4 @@
-# AeroSpace Next
+# Tessera
 
 A personal fork of [AeroSpace](https://github.com/nikitabobko/AeroSpace), the i3-like tiling window
 manager for macOS.
@@ -80,11 +80,11 @@ upstream rather than replacing it.
 
 | | upstream | this fork |
 |---|---|---|
-| App | `AeroSpace.app` | `AeroSpace Next.app` |
-| Bundle id | `bobko.aerospace` | `bogac.aerospace-next` |
-| CLI | `aerospace` | `aerospace-next` |
-| Config | `~/.aerospace.toml` | `~/.aerospace-next.toml` |
-| Snapshots | n/a | `~/.local/state/aerospace-next/layouts` |
+| App | `AeroSpace.app` | `Tessera.app` |
+| Bundle id | `bobko.aerospace` | `bogac.tessera` |
+| CLI | `aerospace` | `tessera` |
+| Config | `~/.aerospace.toml` | `~/.tessera.toml` |
+| Snapshots | n/a | `~/.local/state/tessera/layouts` |
 
 Run both at once and they will fight over your windows, since neither can see the other any more.
 Quit one.
@@ -98,7 +98,7 @@ certificate named `aerospace-codesign-certificate`. See
 ```
 ./build-debug.sh && ./swift-test.sh          # fast loop
 ./build-release.sh --skip-docs               # signed app
-cp -r ".release/AeroSpace Next.app" /Applications/
+cp -r ".release/Tessera.app" /Applications/
 ```
 
 Grant Accessibility permission on first launch. Because the app is signed, the grant survives

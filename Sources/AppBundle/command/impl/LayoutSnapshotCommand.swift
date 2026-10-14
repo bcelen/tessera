@@ -61,10 +61,14 @@ struct LayoutSnapshotCommand: Command {
 
         // Windows already on the workspace come first, then everything else, so that a layout can be
         // gathered back together after the windows have been scattered by a restart
-        var pool: [Window] = workspace.allLeafWindowsRecursive
+        // Only windows that are actually on screen. allLeafWindowsRecursive also walks the containers
+        // for hidden apps (cmd-h), native fullscreen and minimized windows; binding one of those into
+        // a tile leaves an invisible window holding the tile until the app is unhidden
+        var pool: [Window] = workspace.allLeafWindowsRecursive.filter(\.isRestorable)
         pool += Workspace.all
             .filter { $0 != workspace && !$0.isScratchpad }
             .flatMap { $0.allLeafWindowsRecursive }
+            .filter(\.isRestorable)
 
         var titles: [UInt32: String] = [:]
         for window in pool {
@@ -86,6 +90,8 @@ struct LayoutSnapshotCommand: Command {
             }
         }
 
+        workspace.normalizeContainers()
+        rescaleRestoredTree(workspace.rootTilingContainer)
         let wanted = countWindows(snapshot.root)
         let msg = "Restored \(used.count) of \(wanted) window(s) of '\(url.deletingPathExtension().lastPathComponent)' on workspace '\(workspace.name)'"
         return used.count == wanted ? .succ(io.out(msg)) : .succ(io.err(msg))
@@ -134,6 +140,25 @@ struct LayoutSnapshotCommand: Command {
             if let container = treeChild as? TilingContainer {
                 build(snapshotChild, into: container, pool: pool, titles: titles, used: &used)
             }
+        }
+    }
+
+    @MainActor
+    private func rescaleRestoredTree(_ container: TilingContainer) {
+        if container.layout == .tiles {
+            let total = container.getWeight(container.orientation)
+            let sum = container.children.reduce(CGFloat.zero) {
+                $0 + $1.getWeight(container.orientation)
+            }
+            if total > 0 && sum > 0 {
+                for child in container.children {
+                    child.setWeight(container.orientation,
+                                    child.getWeight(container.orientation) / sum * total)
+                }
+            }
+        }
+        for child in container.children {
+            if let nested = child as? TilingContainer { rescaleRestoredTree(nested) }
         }
     }
 
@@ -213,5 +238,17 @@ struct LayoutSnapshotCommand: Command {
             return nil
         }
         return layoutSnapshotUrl(name).getOrNil(appendErrorTo: &io.stderr)
+    }
+}
+
+extension Window {
+    /// Tiled or floating, so visible when its workspace is. Windows that macOS has hidden, minimized or
+    /// taken fullscreen sit in their own containers and must not be pulled into a tile by a restore
+    var isRestorable: Bool {
+        switch windowParentCases {
+            case .tilingContainer, .floatingWindowsContainer: true
+            case .unbound, .macosMinimizedWindowsContainer, .macosHiddenAppsWindowsContainer,
+                 .macosFullscreenWindowsContainer, .macosPopupWindowsContainer: false
+        }
     }
 }

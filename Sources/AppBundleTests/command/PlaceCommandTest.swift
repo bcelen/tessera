@@ -26,6 +26,9 @@ final class PlaceCommandTest: XCTestCase {
         assertFail(parsePlaceLength("150%"))
         assertFail(parsePlaceLength("-5"))
         assertFail(parsePlaceLength("wide"))
+        // Double("inf") parses as +infinity and passes a plain >= 0 check
+        assertFail(parsePlaceLength("inf"))
+        assertFail(parsePlaceLength("nan"))
     }
 
     /// The test monitor is 1920x1080 at the origin, so the lower half is (0, 540) at 1920x540

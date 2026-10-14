@@ -7,13 +7,15 @@ Added: `scratchpad`, `layout-snapshot`, `window-hints`, `sticky`, `place`.
 
 ## Running it
 
-The repo lives at `~/dev/forgejo/aerospace-next`. It was called `AeroSpace` until the rename, so
-older shell history and aliases may still point at the old path.
+The repo lives at `~/dev/forgejo/tessera`. It was called `AeroSpace`, then `aerospace-next`, before
+settling on Tessera (a single tile in a mosaic), so older shell history, aliases and the review
+documents in `dev-docs/reviews/` still use the earlier names. The reviews are left as written, since
+they're a record of the code at the time.
 
 For a quick edit-and-try loop, run the SPM debug binary:
 
 ```
-cd ~/dev/forgejo/aerospace-next
+cd ~/dev/forgejo/tessera
 ./run-debug.sh                # occupies the terminal
 # or, detached:
 nohup ./.debug/AeroSpaceApp > /tmp/aerospace.log 2>&1 &
@@ -28,12 +30,12 @@ For daily use, build the signed app instead:
 
 ```
 ./build-release.sh --skip-docs
-cp -r ".release/AeroSpace Next.app" /Applications/
+cp -r ".release/Tessera.app" /Applications/
 ```
 
 `--skip-docs` is a flag added in this fork. Upstream's script always builds man pages and shell
 completions first, which need Ruby with bundler, Rust, and fish; the flag skips those and the
-packaging steps that consume their output, leaving `.release/AeroSpace Next.app` and `.release/aerospace-next`.
+packaging steps that consume their output, leaving `.release/Tessera.app` and `.release/tessera`.
 It needs the self-signed `aerospace-codesign-certificate` described in `development.md`, and a clean
 git tree. With a real signing identity the Accessibility grant sticks to the certificate and survives
 rebuilds, and `start-at-login = true` works because an app bundle can register itself as a login item.
@@ -102,7 +104,7 @@ The remaining sharp edge: don't park the terminal you are driving from.
 
 ## layout-snapshot
 
-Save a workspace's tiling tree to `~/.local/state/aerospace-next/layouts/<name>.json`, restore it later.
+Save a workspace's tiling tree to `~/.local/state/tessera/layouts/<name>.json`, restore it later.
 
 Per window it records the app bundle id, app name, and window title. Per container, the orientation,
 the layout, and each child's share of its parent as a fraction, so proportions survive a move to a
@@ -140,8 +142,11 @@ never takes focus at all.
 Hint letters are handed out home row first, focused workspace first, capped at 26 windows.
 
 Known rough edge: only the hint letters and `esc` are bound, so any other key does nothing and you
-stay in the mode with no feedback. Reloading the config while the panel is open also strands you
-there. `aerospace-next mode main` is the escape hatch. The fix is to bind every remaining letter to
+stay in the mode with no feedback. `tessera mode main` is the escape hatch.
+
+Reloading the config while the panel was open used to be worse: the new config has no
+`_window-hints` mode, so reactivating it bound nothing, Escape included. Reload now dismisses the
+panel first, and falls back to `main` if the active mode no longer exists in the new config. The fix is to bind every remaining letter to
 `hide`; not done yet.
 
 ## sticky
@@ -215,14 +220,14 @@ the same bundle id, socket, config file, and state directory.
 
 | | upstream | this fork |
 |---|---|---|
-| Bundle id | `bobko.aerospace` | `bogac.aerospace-next` |
-| Debug bundle id | `bobko.aerospace.debug` | `bogac.aerospace-next.debug` |
-| App name | `AeroSpace` | `AeroSpace Next` |
-| CLI | `aerospace` | `aerospace-next` |
-| Config | `~/.aerospace.toml` | `~/.aerospace-next.toml` |
-| XDG config | `~/.config/aerospace/aerospace.toml` | `~/.config/aerospace-next/aerospace-next.toml` |
-| Socket | `/tmp/bobko.aerospace-<user>.sock` | `/tmp/bogac.aerospace-next-<user>.sock` |
-| Snapshots | n/a | `~/.local/state/aerospace-next/layouts` |
+| Bundle id | `bobko.aerospace` | `bogac.tessera` |
+| Debug bundle id | `bobko.aerospace.debug` | `bogac.tessera.debug` |
+| App name | `AeroSpace` | `Tessera` |
+| CLI | `aerospace` | `tessera` |
+| Config | `~/.aerospace.toml` | `~/.tessera.toml` |
+| XDG config | `~/.config/aerospace/aerospace.toml` | `~/.config/tessera/tessera.toml` |
+| Socket | `/tmp/bobko.aerospace-<user>.sock` | `/tmp/bogac.tessera-<user>.sock` |
+| Snapshots | n/a | `~/.local/state/tessera/layouts` |
 
 The socket path and the Console log directory are both derived from the bundle id in
 `Sources/Common/appMetadata.swift`, so they follow automatically. The rest is spelled out in
@@ -232,22 +237,22 @@ The socket path and the Console log directory are both derived from the bundle i
 
 The debug identity is kept separate from release on purpose. `toggleReleaseServerIfDebug` uses it to
 pause the installed release app while a debug build is running, so `./run-debug.sh` doesn't fight
-`/Applications/AeroSpace Next.app` for control of your windows.
+`/Applications/Tessera.app` for control of your windows.
 
-One deliberate leftover: `cleanupPlistFromPrevVersions()` in `config/startAtLogin.swift` still deletes
-`~/Library/LaunchAgents/bobko.aerospace.plist`. That's upstream's legacy artifact, and removing a
-stale file from an old install is harmless.
+`cleanupPlistFromPrevVersions()` used to delete `~/Library/LaunchAgents/bobko.aerospace.plist` on
+every config reload. That's upstream's file, not ours, and since the point of the separate identity
+is coexistence, deleting it could break an upstream install's start at login. Removed.
 
-The app name contains a space, so the release build produces `AeroSpace Next.app`. Every path in
+The app name contains a space, so the release build produces `Tessera.app`. Every path in
 `build-release.sh` that touches it is quoted; if you edit that script, keep the quotes.
 
-Not renamed, on purpose: everything downstream of the release zip. `script/build-brew-cask.sh`,
-`script/publish-release.sh`, `install-from-sources.sh`, and the GitHub workflow still generate and
-publish upstream's `aerospace` cask against `nikitabobko/tap`. None of it runs in the personal
-workflow, which stops at `build-release.sh --skip-docs` plus a copy into `/Applications`, and fixing
-it properly would mean inventing a Homebrew tap that doesn't exist. If you ever run
-`install-from-sources.sh`, expect it to fail on paths like `AeroSpace.app` that the build no longer
-produces.
+Removed, on purpose: upstream's release and community plumbing. `install-from-sources.sh`,
+`script/build-brew-cask.sh` and `script/publish-release.sh` built and published the `aerospace` cask
+to `nikitabobko/tap`, and `publish-release.sh` would have pushed release tags to Nikita's GitHub.
+`.github/` held his CI, issue templates and an issue-closing bot; Forgejo Actions also reads
+`.github/workflows`, so the daily `build.yml` cron would have tried to run here. `CONTRIBUTING.md`
+described contributing to upstream. The personal workflow is `build-release.sh --skip-docs` plus a
+copy into `/Applications`, and without `--skip-docs` the script still builds a zip, just no cask.
 
 ## App icon
 
@@ -263,6 +268,28 @@ Every slot has a real file at the exact pixel size rather than letting Xcode dow
 master, which is why the 16 and 32 point versions stay legible.
 
 The upstream `icon.png` is no longer referenced.
+
+## Fixes from the October 2026 review
+
+A full-project review found the following; all verified against the code before applying.
+
+- Quit could hang. Resetting window frames on termination waited on a semaphore that was never
+  signalled if the window had already vanished from the per-app cache. Now always signalled, and
+  bounded by a 500 ms timeout so one app with a frozen Accessibility thread can't block quit.
+- `layout-snapshot restore` gave snapshot windows the whole width before appending unmatched
+  windows, so the layout pass subtracted from every tile and small ones went negative. The finished
+  tree is now normalized and rescaled proportionally.
+- `workspace next/prev` and relative moves could land on a scratchpad workspace. Filtered.
+- `resize` could make a tile negative. It now computes every new size first and rejects the change
+  as a whole if any would be non-positive.
+- `place --width inf` was accepted, since `Double("inf")` is +infinity. Now requires a finite value.
+- The config watcher stayed attached to the replaced file after a save with a TOML error, so the
+  corrected save went unnoticed. It's re-armed after every automatic reload attempt.
+- The socket trusted the client's 32-bit length prefix and reserved that much memory up front.
+  Frames are now capped at 16 MiB, both directions. The review proposed 1 MiB; that would have
+  silently broken `debug-windows`, whose answer carries full Accessibility dumps.
+- The menu bar's snapshot list scanned the disk on the main actor on every refresh. It now refreshes
+  off the main actor, coalesced to at most once a second.
 
 ## Testing
 

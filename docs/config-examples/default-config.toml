@@ -1,5 +1,5 @@
-# Place a copy of this config to ~/.aerospace-next.toml
-# After that, you can edit ~/.aerospace-next.toml to your liking
+# Place a copy of this config to ~/.tessera.toml
+# After that, you can edit ~/.tessera.toml to your liking
 
 # Config version for compatibility and deprecations
 # See: https://nikitabobko.github.io/AeroSpace/guide#config-version

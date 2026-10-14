@@ -4,8 +4,8 @@ source ./script/setup.sh
 
 ./script/check-uncommitted-files.sh
 
-rm -rf ~/Library/Developer/Xcode/DerivedData/AeroSpaceNext-*
+rm -rf ~/Library/Developer/Xcode/DerivedData/Tessera-*
 rm -rf ./.xcode-build
 
-rm -rf xcode/AeroSpaceNext.xcodeproj
+rm -rf xcode/Tessera.xcodeproj
 ./generate.sh

@@ -1,9 +1,18 @@
 import Network
 import Foundation
 
+/// Upper bound on one framed message, in either direction. Without it the length prefix is trusted
+/// and a local client could make the server reserve close to 4 GiB before sending a byte. It also
+/// caps the server's answers, and 'debug-windows' dumps the full Accessibility tree of up to ten
+/// windows plus their apps, so it is set well above any real message rather than tight
+private let maximumSocketPayloadBytes = 16 * 1024 * 1024
+
 extension NWConnection {
     public func writeAtomic(_ msg: Codable, _ encoder: JSONEncoder = JSONEncoder()) async -> ((), error: NWError?) {
         let payload = Result { try encoder.encode(msg) }.getOrDie()
+        guard payload.count <= maximumSocketPayloadBytes else {
+            return ((), .posix(.EMSGSIZE))
+        }
         var data = uint32Bytes(UInt32(payload.count))
         check(data.count == 4)
         data.append(payload)
@@ -108,6 +117,10 @@ extension NWConnection {
     public func readNonAtomic() async -> Result<Data, NWError> {
         switch await readUInt32() {
             case .success(let count):
+                guard count <= UInt32(maximumSocketPayloadBytes) else {
+                    cancel()
+                    return .failure(.posix(.EMSGSIZE))
+                }
                 return await read(bytes: Int(count))
             case .failure(let e):
                 return .failure(e)

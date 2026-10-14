@@ -64,13 +64,13 @@ struct ServerArgs: Sendable {
 }
 
 private let serverHelp = """
-    USAGE: \(CommandLine.arguments.first ?? "AeroSpace Next.app/Contents/MacOS/AeroSpace Next") [<options>]
+    USAGE: \(CommandLine.arguments.first ?? "Tessera.app/Contents/MacOS/Tessera") [<options>]
 
     OPTIONS:
       -h, --help              Print help
-      -v, --version           Print AeroSpace Next.app version
-      --config-path <path>    Config path. It will take priority over ~/.aerospace-next.toml
-                              and ${XDG_CONFIG_HOME}/aerospace-next/aerospace-next.toml
+      -v, --version           Print Tessera.app version
+      --config-path <path>    Config path. It will take priority over ~/.tessera.toml
+                              and ${XDG_CONFIG_HOME}/tessera/tessera.toml
       --read-only             Disable window management.
                               Useful if you want to use only debug-windows or other query commands.
     """

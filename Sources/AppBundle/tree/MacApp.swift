@@ -159,16 +159,17 @@ final class MacApp: AbstractApp {
     func setAxFrameForTermination(_ windowId: UInt32, _ topLeft: CGPoint?, _ size: CGSize?) {
         setFrameJobs.removeValue(forKey: windowId)?.cancel()
         let semaphore = DispatchSemaphore(value: 0)
-        let job = withWindowAsync(windowId, .nonCancellable) { [axApp] window, job in
+        guard let thread else { return }
+        thread.runInLoopAsync(job: RunLoopJob(.nonCancellable)) { [axApp, windows] job in
+            defer { semaphore.signal() }
+            guard let window = windows.threadGuarded[windowId] else { return }
             try? disableAnimations(app: axApp.threadGuarded, job) {
-                try setFrame(window, topLeft, size, job)
+                try setFrame(window.ax, topLeft, size, job)
             }
-            semaphore.signal()
         }
-        switch job.isCancelled {
-            case true: return
-            case false: semaphore.wait()
-        }
+        // Bounded: quit iterates every window, and one app with a frozen Accessibility thread would
+        // otherwise hang it forever. Missing the frame reset for that one window is the lesser evil
+        _ = semaphore.wait(timeout: .now() + terminationAxTimeout)
     }
 
     func getAxWindowsCount(_ cm: CancellationMode) async throws -> Int? {
@@ -184,14 +185,15 @@ final class MacApp: AbstractApp {
     }
 
     func getAxRectForTermination(_ windowId: UInt32) -> Rect? {
+        guard let thread else { return nil }
         let future = CompletableFuture<Rect?>()
-        let job = withWindowAsync(windowId, .nonCancellable) { window, job in
-            future.complete(try AppBundle.getAxRect(window: window, job: job))
+        thread.runInLoopAsync(job: RunLoopJob(.nonCancellable)) { [windows] job in
+            let rect = windows.threadGuarded[windowId].flatMap {
+                try? AppBundle.getAxRect(window: $0.ax, job: job)
+            }
+            future.complete(rect)
         }
-        return switch job.isCancelled {
-            case true: nil
-            case false: future.blockingGet()
-        }
+        return future.blockingGet(timeout: terminationAxTimeout) ?? nil
     }
 
     func isWindowHeuristic(_ windowId: UInt32, _ windowLevel: MacOsWindowLevel?, _ cm: CancellationMode) async throws -> Bool {
@@ -434,3 +436,5 @@ private func disableAnimations<T>(app: AXUIElement, _ job: RunLoopJob, _ body: (
     try job.checkCancellation()
     return try body()
 }
+
+private let terminationAxTimeout: DispatchTimeInterval = .milliseconds(500)
