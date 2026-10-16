@@ -31,6 +31,10 @@ fi
 ./generate.sh --build-version "$build_version" --codesign-identity "$codesign_identity" --generate-git-hash
 
 swift build -c release --arch arm64 --arch x86_64 --product tessera -Xswiftc -warnings-as-errors # CLI
+# Ask SwiftPM where the binary went instead of hardcoding it: the legacy build system used
+# .build/apple/Products/Release, while the SwiftBuild backend in Xcode 27 uses .build/out/Products/Release.
+# 'tail -1' because the 'swift' wrapper in setup.sh prints 'swift --version' to stdout when swiftly is absent
+cli_bin_dir="$(swift build -c release --arch arm64 --arch x86_64 --product tessera --show-bin-path 2>/dev/null | tail -1)"
 
 # todo: make xcodebuild use the same toolchain as swift
 # toolchain="$(plutil -extract CFBundleIdentifier raw ~/Library/Developer/Toolchains/swift-6.1-RELEASE.xctoolchain/Info.plist)"
@@ -56,7 +60,7 @@ cd -
 git checkout .
 
 cp -r "xcode/.xcode-build/Build/Products/$xcode_configuration/Tessera.app" .release
-cp -r .build/apple/Products/Release/tessera .release
+cp -r "$cli_bin_dir/tessera" .release
 
 ################
 ### SIGN CLI ###
