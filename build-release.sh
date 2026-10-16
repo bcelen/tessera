@@ -3,7 +3,7 @@ cd "$(dirname "$0")"
 source ./script/setup.sh
 
 build_version="0.0.0-SNAPSHOT"
-codesign_identity="aerospace-codesign-certificate"
+codesign_identity="tessera-codesign-certificate"
 # --skip-docs builds just the app and the CLI. Man pages and shell completions need Ruby, Rust and
 # fish, and the distributable zip and brew casks need those outputs, so all of it is skipped
 # together. Enough for a personal install, not enough to cut a release.

@@ -36,7 +36,7 @@ cp -r ".release/Tessera.app" /Applications/
 `--skip-docs` is a flag added in this fork. Upstream's script always builds man pages and shell
 completions first, which need Ruby with bundler, Rust, and fish; the flag skips those and the
 packaging steps that consume their output, leaving `.release/Tessera.app` and `.release/tessera`.
-It needs the self-signed `aerospace-codesign-certificate` described in `development.md`, and a clean
+It needs the self-signed `tessera-codesign-certificate` described in `development.md`, and a clean
 git tree. With a real signing identity the Accessibility grant sticks to the certificate and survives
 rebuilds, and `start-at-login = true` works because an app bundle can register itself as a login item.
 

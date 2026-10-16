@@ -92,7 +92,7 @@ Quit one.
 ## Building
 
 Needs Xcode, bash 5 (`brew install bash`, since macOS ships 3.2), and a self-signed code signing
-certificate named `aerospace-codesign-certificate`. See
+certificate named `tessera-codesign-certificate`. See
 [dev-docs/development.md](dev-docs/development.md) for the Keychain Access steps.
 
 ```

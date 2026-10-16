@@ -33,7 +33,7 @@ If you only plan to build the debug version of AeroSpace, you can run it from th
 
 1.  Open `Keychain Access.app`
 2.  Menu -> `Keychain Access` -> `Certificate Assistance` -> `Create a Certificate...`
-    -   Name: `aerospace-codesign-certificate`
+    -   Name: `tessera-codesign-certificate`
     -   Identity Type: `Self-Signed Root`
     -   Certificate Type: `Code Signing`
 
