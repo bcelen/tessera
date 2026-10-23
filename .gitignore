@@ -22,3 +22,6 @@
 # XCode User settings
 xcuserdata/
 xcshareddata/
+
+# Downloaded Claude Cowork task folders (conversation transcripts)
+/Cowork task */
