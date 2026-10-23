@@ -68,8 +68,56 @@ struct MenuBarLabel: View {
                         itemView(for: trayItem)
                             .opacity(item.isVisible ? 1 : 0.5)
                     }
+                case .tessera:
+                    if let modeItem = viewModel.trayItems.first(where: { $0.type == .mode }) {
+                        itemView(for: modeItem)
+                        modeSeparator(with: .monospaced)
+                    }
+                    tesseraGlyph
             }
         }
+    }
+
+    /// The app icon in miniature: a large tile carrying the focused workspace's name, and a column of
+    /// smaller tiles ending in the icon's red one. Drawn at the same 40-unit height as the squares,
+    /// which the menu bar renders at half size
+    private var tesseraGlyph: some View {
+        let workspaces = viewModel.trayItems.filter { $0.type == .workspace }
+        let name = (workspaces.first(where: \.isActive) ?? workspaces.first)?.name ?? ""
+        let gap = CGFloat(3)
+        let tile = (itemSize - gap) / 2
+        let mini = (tile - gap) / 2
+        let label = Text(name)
+            .font(.system(size: 26, weight: .bold))
+            .padding(.horizontal, 6)
+            .frame(minWidth: tile * 1.6)
+            .frame(height: itemSize)
+        return HStack(alignment: .top, spacing: gap) {
+            ZStack {
+                label.background {
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                }
+                label.blendMode(.destinationOut)
+            }
+            .compositingGroup()
+            VStack(alignment: .trailing, spacing: gap) {
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .frame(width: tile, height: tile)
+                HStack(alignment: .bottom, spacing: gap) {
+                    RoundedRectangle(cornerRadius: 2, style: .continuous)
+                        .frame(width: mini, height: tile)
+                    VStack(spacing: gap) {
+                        RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            .frame(width: mini, height: mini)
+                        RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            .fill(tesseraRed)
+                            .frame(width: mini, height: mini)
+                    }
+                }
+            }
+        }
+        .foregroundStyle(finalColor)
+        .frame(height: itemSize)
     }
 
     private func getText(for design: Font.Design) -> some View {
@@ -174,3 +222,6 @@ extension String {
         unicodeScalars.contains { $0.properties.isEmoji && $0.properties.isEmojiPresentation }
     }
 }
+
+/// The red tile from the app icon
+private let tesseraRed = Color(red: 0.91, green: 0.20, blue: 0.11)

@@ -1,16 +1,22 @@
+# Default config for Tessera, a fork of AeroSpace.
 # Place a copy of this config to ~/.tessera.toml
 # After that, you can edit ~/.tessera.toml to your liking
+#
+# The documentation links below point to upstream AeroSpace's site. Tessera's config format and
+# commands are AeroSpace's, so those pages apply as written. The five commands only Tessera has
+# (scratchpad, layout-snapshot, window-hints, sticky, place) are shown, commented out, at the end of
+# the main bindings below, and documented in the repo under docs/aerospace-<command>.adoc.
 
 # Config version for compatibility and deprecations
 # See: https://nikitabobko.github.io/AeroSpace/guide#config-version
 # Fallback value (if you omit the key): config-version = 1
 config-version = 2
 
-# You can use it to add commands that run after AeroSpace startup.
+# You can use it to add commands that run after Tessera starts.
 # Available commands : https://nikitabobko.github.io/AeroSpace/commands
 after-startup-command = []
 
-# Start AeroSpace at login
+# Start Tessera at login
 start-at-login = false
 
 # Automatically reload the config when the config file is saved
@@ -203,6 +209,16 @@ gaps.outer.right =      0
     # See: https://nikitabobko.github.io/AeroSpace/commands#mode
     alt-shift-semicolon = 'mode service'
 
+    # Tessera-only commands. These lines are still inside [mode.main.binding]; uncomment to use.
+    # The keys are ones this default config leaves free.
+    # alt-shift-minus = 'scratchpad move'               # park the focused window out of sight
+    # alt-shift-comma = 'scratchpad toggle'             # bring it back, or send it away again
+    # alt-shift-slash = 'window-hints show'             # pick a window by pressing its hint letter
+    # alt-shift-0     = 'layout-snapshot save desk'     # save this workspace's layout as 'desk'
+    # alt-0           = 'layout-snapshot restore desk'
+    # alt-shift-equal = 'place --x 0 --y 50% --width 100% --height 50%' # snap into the lower half
+    # Sticky windows are on 's' in service mode, below.
+
 # 'service' binding mode declaration.
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 [mode.service.binding]
@@ -211,8 +227,7 @@ gaps.outer.right =      0
     f = ['layout floating tiling', 'mode main'] # Toggle between floating and tiling layout
     backspace = ['close-all-windows-but-current', 'mode main']
 
-    # sticky is not yet supported https://github.com/nikitabobko/AeroSpace/issues/2
-    #s = ['layout sticky tiling', 'mode main']
+    s = ['sticky toggle', 'mode main'] # Keep the focused window visible on every workspace
 
     alt-shift-h = ['join-with left', 'mode main']
     alt-shift-j = ['join-with down', 'mode main']

@@ -1,0 +1,282 @@
+# Place a copy of this config to ~/.aerospace.toml
+# After that, you can edit ~/.aerospace.toml to your liking
+
+# Config version for compatibility and deprecations
+# Fallback value (if you omit the key): config-version = 1
+config-version = 2
+
+# You can use it to add commands that run after AeroSpace startup.
+# Available commands : https://nikitabobko.github.io/AeroSpace/commands
+after-startup-command = ['workspace 1']
+
+# Start AeroSpace at login
+# Note: no effect when you run the debug build from a terminal
+start-at-login = true
+
+# Normalizations. See: https://nikitabobko.github.io/AeroSpace/guide#normalization
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+
+# See: https://nikitabobko.github.io/AeroSpace/guide#layouts
+# The 'accordion-padding' specifies the size of accordion padding
+# You can set 0 to disable the padding feature
+accordion-padding = 60
+
+# Possible values: tiles|accordion
+default-root-container-layout = 'tiles'
+
+# Possible values: horizontal|vertical|auto
+# 'auto' means: wide monitor (anything wider than high) gets horizontal orientation,
+#               tall monitor (anything higher than wide) gets vertical orientation
+default-root-container-orientation = 'auto'
+
+# Mouse follows focus when focused monitor changes
+# See https://nikitabobko.github.io/AeroSpace/guide#on-focus-changed-callbacks
+# on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
+# You can effectively turn off macOS "Hide application" (cmd-h) feature by toggling this flag
+automatically-unhide-macos-hidden-apps = false
+
+# List of workspaces that should stay alive even when they contain no windows,
+# even when they are invisible.
+persistent-workspaces = ["1", "2", "3", "4", "5", "6", "7", "A", "B", "C", "D"]
+
+# NOTE: this pins every workspace to the main display. On a single monitor it changes nothing,
+# but as soon as you attach a second display, no workspace can be moved to it and
+# 'move-workspace-to-monitor' fails silently. Delete this table if you ever present from
+# this machine with an external monitor.
+[workspace-to-monitor-force-assignment]
+1 = 'main'
+2 = 'main'
+3 = 'main'
+4 = 'main'
+5 = 'main'
+6 = 'main'
+7 = 'main'
+A = 'main'
+B = 'main'
+C = 'main'
+D = 'main'
+
+# A callback that runs every time binding mode changes
+on-mode-changed = []
+
+# Possible values: (qwerty|dvorak|colemak)
+[key-mapping]
+    preset = 'qwerty'
+
+# Gaps between windows (inner-*) and between monitor edges (outer-*)
+[gaps]
+    inner.horizontal = 8
+    inner.vertical   = 8
+    outer.left       = 8
+    outer.bottom     = 8
+    outer.top        = 8
+    outer.right      = 8
+
+# 'main' binding mode declaration
+# 'main' binding mode must be always presented
+[mode.main.binding]
+    # All possible keys:
+    # - Letters.        a, b, c, ..., z
+    # - Numbers.        0, 1, 2, ..., 9
+    # - Keypad numbers. keypad0, keypad1, keypad2, ..., keypad9
+    # - F-keys.         f1, f2, ..., f20
+    # - Special keys.   minus, equal, period, comma, slash, backslash, quote, semicolon,
+    #                   backtick, leftSquareBracket, rightSquareBracket, space, enter, esc,
+    #                   backspace, tab, pageUp, pageDown, home, end, forwardDelete,
+    #                   sectionSign (ISO keyboards only, european keyboards only)
+    # - Keypad special. keypadClear, keypadDecimalMark, keypadDivide, keypadEnter, keypadEqual,
+    #                   keypadMinus, keypadMultiply, keypadPlus
+    # - Arrows.         left, down, up, right
+    # All possible modifiers: cmd, alt, ctrl, shift
+
+    # Toggle windows in and out of the tiling layout/floating
+    alt-slash = 'layout tiles horizontal vertical'
+    alt-comma = 'layout accordion horizontal vertical'
+
+    # Switch window focus
+    ctrl-alt-left  = 'focus left'
+    ctrl-alt-down  = 'focus down'
+    ctrl-alt-up    = 'focus up'
+    ctrl-alt-right = 'focus right'
+
+    # Move windows in the given direction
+    ctrl-alt-shift-left  = 'move left'
+    ctrl-alt-shift-down  = 'move down'
+    ctrl-alt-shift-up    = 'move up'
+    ctrl-alt-shift-right = 'move right'
+
+    # Resize windows
+    alt-minus = 'resize smart -50'
+    alt-equal = 'resize smart +50'
+
+    # Switch workspaces
+    alt-1 = 'workspace 1'
+    alt-2 = 'workspace 2'
+    alt-3 = 'workspace 3'
+    alt-4 = 'workspace 4'
+    alt-5 = 'workspace 5'
+    alt-6 = 'workspace 6'
+    alt-7 = 'workspace 7'
+    alt-shift-a = 'workspace A'
+    alt-shift-b = 'workspace B'
+    alt-shift-c = 'workspace C'
+    alt-shift-d = 'workspace D'
+
+    # Move windows/nodes to other workspaces
+    # CHANGED: ctrl-a, ctrl-b, ctrl-c and ctrl-d used to live here. Those are the shell's
+    # start-of-line, back, interrupt and EOF keys, and AeroSpace registers hotkeys globally,
+    # so your terminal never received them. That is why Ctrl-C would not stop a running
+    # process. Digits are safe and left alone.
+    ctrl-1 = ['move-node-to-workspace 1', 'workspace 1']
+    ctrl-2 = ['move-node-to-workspace 2', 'workspace 2']
+    ctrl-3 = ['move-node-to-workspace 3', 'workspace 3']
+    ctrl-4 = ['move-node-to-workspace 4', 'workspace 4']
+    ctrl-5 = ['move-node-to-workspace 5', 'workspace 5']
+    ctrl-6 = ['move-node-to-workspace 6', 'workspace 6']
+    ctrl-7 = ['move-node-to-workspace 7', 'workspace 7']
+    ctrl-shift-a = ['move-node-to-workspace A', 'workspace A']
+    ctrl-shift-b = ['move-node-to-workspace B', 'workspace B']
+    ctrl-shift-c = ['move-node-to-workspace C', 'workspace C']
+    ctrl-shift-d = ['move-node-to-workspace D', 'workspace D']
+
+    alt-backtick = 'workspace-back-and-forth'
+
+    # Some of my customizations
+    ctrl-alt-cmd-left  = 'join-with left'
+    ctrl-alt-cmd-down  = 'join-with down'
+    ctrl-alt-cmd-up    = 'join-with up'
+    ctrl-alt-cmd-right = 'join-with right'
+
+    ctrl-alt-f = 'layout floating tiling'
+    alt-f      = 'flatten-workspace-tree'
+
+    # Custom AeroSpace build only. Comment these four out before running the released version
+    alt-shift-slash = 'window-hints show'
+    alt-shift-minus = 'scratchpad move'
+    alt-shift-comma = 'scratchpad toggle'
+    alt-0           = 'mode layout'
+
+    alt-shift-semicolon = 'mode service'
+    ctrl-alt-w = 'mode window'
+
+[mode.window.binding]
+    left  = 'focus left'
+    down  = 'focus down'
+    up    = 'focus up'
+    right = 'focus right'
+
+    shift-left  = 'move left'
+    shift-down  = 'move down'
+    shift-up    = 'move up'
+    shift-right = 'move right'
+
+    cmd-left  = 'join-with left'
+    cmd-right = 'join-with right'
+
+    esc   = 'mode main'
+    enter = 'mode main'
+
+# Layout snapshots. Press alt-0, then a digit to restore, or shift plus a digit to save.
+# Names are arbitrary and there is no limit: each one is a file in
+# ~/.local/state/aerospace/layouts/. 'aerospace layout-snapshot list' shows them all.
+# Add more lines here as you need them.
+[mode.layout.binding]
+    1 = ['layout-snapshot restore teaching', 'mode main']
+    2 = ['layout-snapshot restore research', 'mode main']
+    3 = ['layout-snapshot restore writing', 'mode main']
+    4 = ['layout-snapshot restore meetings', 'mode main']
+
+    shift-1 = ['layout-snapshot save teaching', 'mode main']
+    shift-2 = ['layout-snapshot save research', 'mode main']
+    shift-3 = ['layout-snapshot save writing', 'mode main']
+    shift-4 = ['layout-snapshot save meetings', 'mode main']
+
+    esc   = 'mode main'
+    enter = 'mode main'
+
+# 'service' binding mode declaration
+[mode.service.binding]
+    esc       = ['reload-config', 'mode main']
+    r         = ['flatten-workspace-tree', 'mode main'] # reset layout
+    f         = ['layout floating tiling', 'mode main'] # Toggle between floating and tiling layout
+    backspace = ['close-all-windows-but-current', 'mode main']
+    # sticky is not yet supported https://github.com/nikitabobko/AeroSpace/issues/2
+    #s = ['layout sticky tiling', 'mode main']
+    alt-shift-h = ['join-with left', 'mode main']
+    alt-shift-j = ['join-with down', 'mode main']
+    alt-shift-k = ['join-with up', 'mode main']
+    alt-shift-l = ['join-with right', 'mode main']
+
+# Apps that should float rather than tile
+[[on-window-detected]]
+if.app-name-regex-substring = 'System Settings'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = '1Password'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'Bitwarden'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'BusyCal'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'Calculator'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'NordVPN'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'App Store'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'Calendar'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.finder'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'Copied'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'ForkLift'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'Antinote'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'OBSBOT Center'
+run = 'layout floating'
+
+# Apps pinned to a workspace
+[[on-window-detected]]
+if.app-id = 'com.microsoft.Outlook'
+run = 'move-node-to-workspace 1'
+
+# [[on-window-detected]]
+# if.app-name-regex-substring = 'zoom.us'
+# run = 'move-node-to-workspace 5'
+
+# [[on-window-detected]]
+# if.app-id = 'com.microsoft.teams2'
+# run = 'move-node-to-workspace 5'
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.VSCode'
+if.window-title-regex-substring = 'm-imperfect information'
+run = ['move-node-to-workspace A', 'fullscreen']
+check-further-callbacks = false
