@@ -23,7 +23,7 @@ would write:
 
 ## What's different
 
-Five commands upstream doesn't have.
+Six commands and a layout upstream doesn't have.
 
 **`scratchpad`** parks a window out of sight and summons it back with one key, i3 style. The window
 keeps running and reappears floating, in the same relative position it had when you hid it. Several
@@ -67,6 +67,16 @@ floating geometry alone entirely.
 place --x 0 --y 50% --width 100% --height 50%     # the lower half
 ```
 
+**`layout scrolling`** turns a workspace into a strip of columns, after niri and PaperWM. Each column
+keeps its own width, so opening a window adds a column instead of squeezing the others, and the strip
+scrolls to follow focus with a sliver of the neighbours showing at the edges. **`column-width`** sets
+the focused column's width, and cycles when given several.
+
+```
+layout scrolling tiles             # toggle the whole workspace
+column-width 33% 50% 67%           # cycle the focused column's width
+```
+
 Smaller changes. The menu bar lists saved layouts with the keys that restore them and hides empty
 workspaces, which matters when `persistent-workspaces` keeps eleven of them alive. `build-release.sh`
 takes a `--skip-docs` flag that builds just the app and the CLI, skipping the man pages and shell
@@ -107,7 +117,7 @@ rebuilds, and `start-at-login = true` works.
 ## Layout
 
 ```
-Sources/            upstream's code, plus the five commands
+Sources/            upstream's code, plus the six commands and the scrolling layout
 docs/               upstream's asciidoc, plus one page per new command
 dev-docs/           architecture and development notes
   fork-notes.md     why this fork does what it does, and the traps

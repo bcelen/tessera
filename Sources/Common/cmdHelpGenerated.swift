@@ -10,6 +10,9 @@ let close_all_windows_but_current_help_generated = """
 let close_help_generated = """
     USAGE: close [-h|--help] [--quit-if-last-window] [--window-id <window-id>]
     """
+let column_width_help_generated = """
+    USAGE: column-width [-h|--help] [--window-id <window-id>] <width>...
+    """
 let config_help_generated = """
     USAGE: config [-h|--help] --get <name> [--json] [--keys]
        OR: config [-h|--help] --major-keys

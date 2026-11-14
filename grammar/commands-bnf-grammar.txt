@@ -14,6 +14,8 @@ tessera -h;
 
     | close-all-windows-but-current [--quit-if-last-window]
 
+    | column-width [--window-id <window_id>]... <column_width>... [--window-id <window_id>]...
+
     | config [--json | --keys]... --get {{{ tessera config --major-keys }}} [--json | --keys]...
     | config --major-keys
     | config --all-keys
@@ -141,9 +143,10 @@ tessera -h;
 <number> ::= {{{ true }}};
 <scratchpad_name> ::= {{{ true }}};
 <place_length> ::= {{{ true }}};
+<column_width> ::= {{{ true }}};
 <snapshot_name> ::= {{{ tessera layout-snapshot list }}};
 <monitor_pattern> ::= {{{ true }}};
-<layouts> ::= h_tiles|v_tiles|h_accordion|v_accordion|tiles|accordion|horizontal|vertical|tiling|floating;
+<layouts> ::= h_tiles|v_tiles|h_accordion|v_accordion|tiles|accordion|horizontal|vertical|tiling|floating|scrolling;
 
 <list_workspaces1_flag> ::= --visible [no] | --empty [no] | --format <output_format> | --format <output_format> | --count | --json;
 

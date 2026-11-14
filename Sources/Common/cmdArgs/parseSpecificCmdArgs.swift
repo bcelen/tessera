@@ -79,5 +79,5 @@ extension ArgParserProtocol where Root: ConvenienceMutable {
 
 private func isResizeNegativeUnitsArg(_ raw: any CmdArgs, arg: String) -> Bool {
     var iter = arg.makeIterator()
-    return raw is ResizeCmdArgs && iter.next() == "-" && iter.next()?.isNumber == true
+    return (raw is ResizeCmdArgs || raw is ColumnWidthCmdArgs) && iter.next() == "-" && iter.next()?.isNumber == true
 }

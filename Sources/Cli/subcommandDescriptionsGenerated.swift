@@ -5,6 +5,7 @@ let subcommandDescriptions = [
     ["  balance-sizes", "Balance sizes of all windows in the current workspace"],
     ["  close-all-windows-but-current", "On the focused workspace, close all windows but current"],
     ["  close", "Close the focused window"],
+    ["  column-width", "Set the width of the focused column in the scrolling layout"],
     ["  config", "Query AeroSpace config options"],
     ["  debug-windows", "Interactive command to record Accessibility API debug information to create bug reports"],
     ["  echo", "Print arguments and interpolation variables to stdout"],

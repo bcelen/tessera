@@ -9,7 +9,9 @@ struct LayoutCommand: Command {
         guard let target = args.resolveTargetOrReportError(env, io) else { return .fail }
 
         let node: ConventionalWindowParentCases
-        switch args.root ? nil : target.windowOrNil {
+        // Scrolling only exists at the root, so a toggle involving it is always about the root
+        let isAboutRoot = args.root || args.toggleBetween.val.contains(.scrolling)
+        switch isAboutRoot ? nil : target.windowOrNil {
             case let window?:
                 switch window.windowParentCases {
                     case .floatingWindowsContainer(let it):
@@ -53,6 +55,8 @@ struct LayoutCommand: Command {
                 return changeTilingLayout(io, targetLayout: .accordion, targetOrientation: nil, node: node)
             case .tiles:
                 return changeTilingLayout(io, targetLayout: .tiles, targetOrientation: nil, node: node)
+            case .scrolling:
+                return changeTilingLayout(io, targetLayout: .scrolling, targetOrientation: nil, node: node)
             case .horizontal:
                 return changeTilingLayout(io, targetLayout: nil, targetOrientation: .h, node: node)
             case .vertical:
@@ -105,6 +109,7 @@ extension ConventionalWindowParentCases {
         return switch layout {
             case .accordion:   tilingContainerOrNil?.layout == .accordion
             case .tiles:       tilingContainerOrNil?.layout == .tiles
+            case .scrolling:   tilingContainerOrNil?.layout == .scrolling
             case .horizontal:  tilingContainerOrNil?.orientation == .h
             case .vertical:    tilingContainerOrNil?.orientation == .v
             case .h_accordion: tilingContainerOrNil.map { $0.layout == .accordion && $0.orientation == .h } == true

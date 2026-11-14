@@ -119,9 +119,14 @@ final class MacWindow: Window {
     }
 
     // todo it's part of the window layout and should be moved to layoutRecursive.swift
+    /// - Parameter rememberPosition: false skips reading the frame back, which only floating windows need to
+    ///   return to their spot. The scrolling layout hides tiling columns on every refresh
     @MainActor
-    func hideInCorner(_ corner: OptimalHideCorner) async throws {
+    func hideInCorner(_ corner: OptimalHideCorner, rememberPosition: Bool = true) async throws {
         guard let nodeMonitor else { return }
+        if !rememberPosition && !isHiddenInCorner {
+            prevUnhiddenProportionalPositionInsideWorkspaceRect = .zero
+        }
         // Don't accidentally override prevUnhiddenEmulationPosition in case of subsequent `hideInCorner` calls
         if !isHiddenInCorner {
             guard let windowRect = try await getAxRect(.cancellable) else { return }
@@ -225,6 +230,12 @@ private func unbindAndGetBindingDataForNewWindow(_ windowId: UInt32, _ macApp: M
 private func unbindAndGetBindingDataForNewTilingWindow(_ workspace: Workspace, window: Window?) -> BindingData {
     window?.unbindFromParent() // It's important to unbind to get correct data from below
     let mruWindow = workspace.mostRecentWindowRecursive
+    let root = workspace.rootTilingContainer
+    if root.layout == .scrolling {
+        // A new window opens a new column next to the focused one, rather than splitting it
+        let column = mruWindow?.parentsWithSelf.first(where: { $0.parent === root })
+        return BindingData(parent: root, adaptiveWeight: WEIGHT_AUTO, index: column?.ownIndex.map { $0 + 1 } ?? INDEX_BIND_LAST)
+    }
     if let mruWindow, let tilingParent = mruWindow.parent as? TilingContainer {
         return BindingData(
             parent: tilingParent,

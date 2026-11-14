@@ -9,8 +9,9 @@ Tessera is a personal fork of [AeroSpace](https://github.com/nikitabobko/AeroSpa
 tiling window manager for macOS, written in Swift. Upstream is by Nikita Bobko, MIT licensed; keep
 `LICENSE.txt` and the credit in `README.md` intact.
 
-The fork adds five commands (`scratchpad`, `layout-snapshot`, `window-hints`, `sticky`, `place`),
-menu bar changes, a custom icon, and its own identity so it can coexist with upstream:
+The fork adds six commands (`scratchpad`, `layout-snapshot`, `window-hints`, `sticky`, `place`,
+`column-width`), a `scrolling` layout, menu bar changes, a custom icon, and its own identity so it
+can coexist with upstream:
 
 | | value |
 |---|---|

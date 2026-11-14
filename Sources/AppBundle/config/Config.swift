@@ -45,6 +45,8 @@ struct Config: ConvenienceMutable {
     var autoReloadConfig: Bool = false
     var automaticallyUnhideMacosHiddenApps: Bool = false
     var accordionPadding: Int = 30
+    var scrollingDefaultColumnWidth: Int = 50 // percent of the screen
+    var scrollingPeek: Int = 40
     var enableNormalizationOppositeOrientationForNestedContainers: Bool = true
     var persistentWorkspaces: OrderedSet<String> = []
     var execOnWorkspaceChange: [String] = [] // todo deprecate

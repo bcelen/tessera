@@ -1,9 +1,10 @@
 # Fork notes
 
-Personal fork of AeroSpace with five commands that upstream doesn't have. Written down so that
-neither I nor a future Claude session has to reconstruct the reasoning.
+Personal fork of AeroSpace with six commands and a layout that upstream doesn't have. Written down so
+that neither I nor a future Claude session has to reconstruct the reasoning.
 
-Added: `scratchpad`, `layout-snapshot`, `window-hints`, `sticky`, `place`.
+Added: `scratchpad`, `layout-snapshot`, `window-hints`, `sticky`, `place`, `column-width`, and the
+`scrolling` layout.
 
 ## Running it
 
@@ -187,6 +188,48 @@ Decisions:
 
 `TestWindow` now overrides `setAxFrame` to record the frame. Before this, any test path reaching
 `setAxFrame` would have hit `die("Not implemented")`, which is why nothing tested geometry.
+
+## scrolling layout and column-width
+
+A third layout next to `tiles` and `accordion`, after niri and PaperWM: the root's children are
+columns with a width of their own, on a strip that scrolls to keep the focused column in view.
+Opening a window adds a column instead of squeezing the others. `column-width` sets the focused
+column's width in percent; several values cycle.
+
+Where the code is:
+
+- `layout/scrollingLayout.swift` holds `ScrollingStrip`, the pure arithmetic (sizes, offset, where
+  each column starts), plus the per-node width and per-container scroll offset. Both live in
+  `TreeNode` user data rather than new stored properties, to keep upstream files untouched.
+- `layoutScrolling` in `layoutRecursive.swift` turns the strip into frames. A column fully out of view
+  is hidden with `hideInCorner`, the mechanism invisible workspaces already use. A column cut by the
+  screen edge is left half off screen, which macOS allows horizontally.
+- New windows go next to the focused column: `unbindAndGetBindingDataForNewTilingWindow` in
+  `MacWindow.swift`.
+
+Decisions:
+
+- Root only. `layout scrolling` always targets the workspace root, even without `--root`, so
+  `layout scrolling tiles` toggles the whole workspace from inside a stacked column. Nested scrolling
+  would need clipping between siblings, which macOS windows can't do.
+- Width is a fraction of the screen, not points, so a strip survives moving between the 52" Dell and
+  the MacBook. A column of width f takes f of the screen including its share of the gaps, so two
+  halves and the gap between them fill it exactly.
+- The view scrolls as little as possible, and keeps `scrolling-peek` points of the neighbours in view
+  so you can see there is more. Peek shrinks rather than push the focused column out of view.
+- A cut column whose cut part would land on an adjacent monitor is hidden instead (`Monitor.neighbours`).
+  On a single display nothing is ever hidden that is partly visible.
+- Hiding scrolled-out columns runs on every refresh, so `hideInCorner(rememberPosition: false)` skips
+  the Accessibility read that only floating windows need.
+- When Tessera is disabled from the menu bar nothing may stay hidden, so `layoutWorkspace(hideCorner:
+  nil)` lays a scrolling root out as tiles. That is also why `setWeight` accepts a scrolling parent.
+- Flattening would replace a scrolling root that has a single column with the column itself, dropping
+  out of the layout. `normalizeContainers` skips that case.
+- `resize` works on columns too (in points), and `balance-sizes` resets every column to the default.
+  Snapshots store the width as an optional `columnWidth`, so older snapshot files still load.
+- Not done: dragging a column's edge with the mouse. The layout snaps it back, since
+  `resizeWithMouse` only knows tiles. Vertical scrolling works in principle but macOS keeps windows
+  below the menu bar, so a column cut at the top gets pushed down; use it horizontally.
 
 ## Menu bar
 

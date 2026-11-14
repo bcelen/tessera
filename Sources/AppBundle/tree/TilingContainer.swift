@@ -58,6 +58,8 @@ extension TilingContainer {
 enum Layout: String {
     case tiles
     case accordion
+    /// Columns of their own size on a strip that scrolls to follow focus. Root container only. See `ScrollingStrip`
+    case scrolling
 }
 
 extension String {

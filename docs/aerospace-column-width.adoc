@@ -1,0 +1,63 @@
+= aerospace-column-width(1)
+include::util/man-attributes.adoc[]
+// tag::purpose[]
+:manpurpose: Set the width of the focused column in the scrolling layout
+// end::purpose[]
+:manname: aerospace-column-width
+
+// =========================================================== Synopsis
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace column-width [-h|--help] [--window-id <window-id>] <width>...
+
+// end::synopsis[]
+
+// =========================================================== Description
+== Description
+
+// tag::body[]
+{manpurpose}
+
+In the `scrolling` layout (see `layout scrolling`) every column has a width of its own, as a percentage of the screen.
+Changing it leaves the other columns alone; the strip of columns just gets longer or shorter.
+A new column starts at `scrolling-default-column-width`, 50% unless the config says otherwise.
+
+With several `<width>` arguments, the command cycles: it picks the first one that is wider than the column is now,
+and wraps around to the first one after the last.
+List them from narrowest to widest.
+
+`resize width` works on columns too, in points rather than percent, and `balance-sizes` puts every column back to the
+default width.
+
+// =========================================================== Options
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+
+--window-id <window-id>::
+include::./util/window-id-flag-desc.adoc[]
+
+// =========================================================== Arguments
+include::./util/conditional-arguments-header.adoc[]
+
+<width>::
+A percentage of the screen, like `50%`, between 10% and 100%.
+`+N%` and `-N%` widen or narrow the column by that much; a relative width must be the only argument.
+
+// =========================================================== Examples
+include::./util/conditional-examples-header.adoc[]
+
+* Cycle through a third, a half and two thirds of the screen: +
+`aerospace column-width 33% 50% 67%`
+
+* Make the column take the whole screen: +
+`aerospace column-width 100%`
+
+* Widen the column a little: +
+`aerospace column-width +10%`
+
+// end::body[]
+
+// =========================================================== Footer
+include::./util/man-footer.adoc[]

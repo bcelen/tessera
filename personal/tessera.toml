@@ -86,6 +86,8 @@ alt-period = 'layout floating tiling'
 alt-semicolon = 'flatten-workspace-tree'
 alt-minus = 'resize smart -50'
 alt-equal = 'resize smart +50'
+alt-quote = 'layout scrolling tiles'               # whole workspace: scrolling strip <-> tiles
+alt-backslash = 'column-width 33% 50% 67%'          # scrolling: cycle the column's width
 
 # --- alt-shift: the two that can lose work ---------------------------------
 

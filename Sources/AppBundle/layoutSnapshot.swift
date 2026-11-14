@@ -20,6 +20,8 @@ struct SnapshotNode: Codable {
     var kind: Kind
     /// Share of the parent container taken by this node, in `0...1`. Meaningless for the root
     var weight: Double
+    /// Width as a column of a scrolling container, as a fraction of the screen. Nil means the default width
+    var columnWidth: Double?
 
     // Container only
     var orientation: String?

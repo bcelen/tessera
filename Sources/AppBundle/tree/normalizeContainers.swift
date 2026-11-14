@@ -9,7 +9,11 @@ extension Workspace {
 
 extension TilingContainer {
     @MainActor fileprivate func unbindEmptyAndAutoFlatten() {
-        if let child = children.singleOrNil(), config.enableNormalizationFlattenContainers && (child is TilingContainer || !isRootContainer) {
+        // A scrolling root with a single column must stay, or flattening would replace it with the column and
+        // drop out of the scrolling layout
+        if let child = children.singleOrNil(), config.enableNormalizationFlattenContainers && (child is TilingContainer || !isRootContainer),
+           !(isRootContainer && layout == .scrolling)
+        {
             child.unbindFromParent()
             let mru = parent?.mostRecentChild
             let previousBinding = unbindFromParent()

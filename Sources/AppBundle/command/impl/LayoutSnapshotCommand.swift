@@ -34,13 +34,17 @@ struct LayoutSnapshotCommand: Command {
         var children: [SnapshotNode] = []
         for child in container.children {
             let weight = total > 0 ? Double(child.getWeight(container.orientation)) / total : 0
+            let columnWidth = container.layout == .scrolling ? child.scrollingColumnWidth.map(Double.init) : nil
             switch child.nodeCases {
                 case .window(let window):
                     let title = (try? await window.getTitle(.nonCancellable)) ?? ""
-                    children.append(.window(window, title: title, weight: weight))
+                    var node = SnapshotNode.window(window, title: title, weight: weight)
+                    node.columnWidth = columnWidth
+                    children.append(node)
                 case .tilingContainer(let nested):
                     var node = await capture(nested)
                     node.weight = weight
+                    node.columnWidth = columnWidth
                     children.append(node)
                 case .workspace, .floatingWindowsContainer, .macosMinimizedWindowsContainer,
                      .macosHiddenAppsWindowsContainer, .macosFullscreenWindowsContainer,
@@ -137,6 +141,7 @@ struct LayoutSnapshotCommand: Command {
             }
         }
         for (snapshotChild, treeChild) in bound {
+            treeChild.scrollingColumnWidth = snapshotChild.columnWidth.map { CGFloat($0) }
             if let container = treeChild as? TilingContainer {
                 build(snapshotChild, into: container, pool: pool, titles: titles, used: &used)
             }

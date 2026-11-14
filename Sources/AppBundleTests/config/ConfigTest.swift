@@ -29,6 +29,14 @@ final class ConfigTest: XCTestCase {
         assertEquals(result.warnings, [])
     }
 
+    /// The config both Macs load through a symlink, see AGENTS.md. A broken binding there breaks every hotkey
+    func testParsePersonalConfig() {
+        let toml = try! String(contentsOf: projectRoot.appending(component: "personal/tessera.toml"), encoding: .utf8)
+        let result = parseConfig(toml)
+        assertEquals(result.errors, [])
+        assertEquals(result.warnings, [])
+    }
+
     func testConfigVersionOutOfBounds() {
         let result = parseConfig(
             """

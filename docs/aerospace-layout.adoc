@@ -50,8 +50,20 @@ Possible values:
 * `tiles|accordion` - Change tiling layout but preserve orientation
 * `horizontal|vertical` - Change orientation but preserve layout
 * `tiling|floating` - Toggle between floating/tiling mode
+* `scrolling` - Lay the workspace out as a strip of columns that scrolls to follow focus. See below
 +
 If several `<target-layout>` are supplied, then the first one that doesn't describe the currently active layout is applied.
+
+*The scrolling layout.*
+Each child of the root container becomes a column with a width of its own, a percentage of the screen set with
+`column-width`. Opening a window adds a column next to the focused one instead of squeezing the others. When focus
+moves to a column out of view, the strip scrolls just far enough to show it, keeping `scrolling-peek` points of the
+neighbouring columns in view at the edges. Columns out of view are hidden the same way windows of other workspaces are.
+Stack several windows in one column with `join-with`.
+
+`scrolling` only applies to the workspace root, so a `layout` command that mentions it always acts on the root,
+as if `--root` were given. `layout scrolling tiles` toggles the whole workspace between the two.
+If another monitor sits next to the edge a column would cross, that column is hidden rather than shown cut.
 
 // =========================================================== Examples
 include::./util/conditional-examples-header.adoc[]
@@ -67,6 +79,9 @@ include::./util/conditional-examples-header.adoc[]
 
 * Switch to `tiles` layout. Toggle the layout orientation if already in `tiles` layout: +
 `aerospace layout tiles horizontal vertical`
+
+* Toggle the workspace between the scrolling and the tiles layout: +
+`aerospace layout scrolling tiles`
 
 // end::body[]
 

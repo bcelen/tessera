@@ -50,6 +50,7 @@ import Foundation
 private func smartLayoutAtStartup() {
     let workspace = focus.workspace
     let root = workspace.rootTilingContainer
+    if root.layout == .scrolling { return } // Chosen in the config, and it already copes with any number of windows
     switch root.children.count <= 3 {
         case true: root.layout = .tiles
         case false: root.layout = .accordion

@@ -26,6 +26,13 @@ include::aerospace-close-all-windows-but-current.adoc[tags=synopsis]
 include::aerospace-close-all-windows-but-current.adoc[tags=purpose]
 include::aerospace-close-all-windows-but-current.adoc[tags=body]
 
+== column-width
+----
+include::aerospace-column-width.adoc[tags=synopsis]
+----
+include::aerospace-column-width.adoc[tags=purpose]
+include::aerospace-column-width.adoc[tags=body]
+
 == config
 ----
 include::aerospace-config.adoc[tags=synopsis]

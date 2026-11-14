@@ -34,6 +34,7 @@ struct ResizeCommand: Command {
                 parent = node?.parent as? TilingContainer
         }
         guard let parent else {
+            if let result = resizeScrollingColumn(target.windowOrNil, args) { return result }
             return .fail(io.err("resize command doesn't support floating windows yet https://github.com/nikitabobko/AeroSpace/issues/9"))
         }
         guard let orientation else { return .fail }
@@ -56,4 +57,26 @@ struct ResizeCommand: Command {
         }
         return .succ
     }
+}
+
+/// In the scrolling layout a column has a size of its own rather than a share of the screen, so resizing it
+/// leaves the other columns alone. Nil if the window isn't in a column that can be resized that way
+@MainActor
+private func resizeScrollingColumn(_ window: Window?, _ args: ResizeCmdArgs) -> BinaryExitCode? {
+    guard let column = window?.scrollingColumn, let strip = column.parent as? TilingContainer else { return nil }
+    let orientation: Orientation? = switch args.dimension.val {
+        case .width: .h
+        case .height: .v
+        case .smart: strip.orientation
+        case .smartOpposite: nil
+    }
+    guard orientation == strip.orientation, let (viewport, gap) = strip.scrollingViewport else { return nil }
+    let size = scrollingColumnSize(width: column.effectiveScrollingColumnWidth, viewport: viewport, gap: gap)
+    let newSize: CGFloat = switch args.units.val {
+        case .set(let unit): CGFloat(unit)
+        case .add(let unit): size + CGFloat(unit)
+        case .subtract(let unit): size - CGFloat(unit)
+    }
+    column.scrollingColumnWidth = scrollingColumnWidth(size: newSize, viewport: viewport, gap: gap)
+    return .succ
 }

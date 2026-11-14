@@ -32,7 +32,13 @@ enable-normalization-opposite-orientation-for-nested-containers = true
 # You can set 0 to disable the padding feature
 accordion-padding = 30
 
-# Possible values: tiles|accordion
+# The scrolling layout ('layout scrolling'): columns of their own width on a strip that scrolls to
+# follow focus. A new column takes 'scrolling-default-column-width' percent of the screen, and
+# 'scrolling-peek' points of the neighbouring columns stay in view at the screen edges
+scrolling-default-column-width = 50
+scrolling-peek = 40
+
+# Possible values: tiles|accordion|scrolling
 default-root-container-layout = 'tiles'
 
 # Possible values: horizontal|vertical|auto

@@ -1,14 +1,16 @@
 import AppKit
 
 extension Workspace {
+    /// - Parameter hideCorner: where columns scrolled out of view are hidden. Nil means nothing may be hidden,
+    ///   so scrolling containers are laid out as tiles instead
     @MainActor
-    func layoutWorkspace() async throws {
+    func layoutWorkspace(hideCorner: OptimalHideCorner?) async throws {
         if isEffectivelyEmpty { return }
         let rect = workspaceMonitor.visibleRectPaddedByOuterGaps
         // If monitors are aligned vertically and the monitor below has smaller width, then macOS may not allow the
         // window on the upper monitor to take full width. rect.height - 1 resolves this problem
         // But I also faced this problem in monitors horizontal configuration. ¯\_(ツ)_/¯
-        try await layoutRecursive(rect.topLeftCorner, width: rect.width, height: rect.height - 1, virtual: rect, LayoutContext(self))
+        try await layoutRecursive(rect.topLeftCorner, width: rect.width, height: rect.height - 1, virtual: rect, LayoutContext(self, hideCorner: hideCorner))
     }
 }
 
@@ -48,6 +50,12 @@ extension TreeNode {
                         try await container.layoutTiles(point, width: width, height: height, virtual: virtual, context)
                     case .accordion:
                         try await container.layoutAccordion(point, width: width, height: height, virtual: virtual, context)
+                    case .scrolling:
+                        if let hideCorner = context.hideCorner {
+                            try await container.layoutScrolling(point, width: width, height: height, hideCorner: hideCorner, context)
+                        } else {
+                            try await container.layoutTiles(point, width: width, height: height, virtual: virtual, context)
+                        }
                 }
             case .macosMinimizedWindowsContainer, .macosFullscreenWindowsContainer,
                  .macosPopupWindowsContainer, .macosHiddenAppsWindowsContainer:
@@ -59,11 +67,13 @@ extension TreeNode {
 private struct LayoutContext {
     let workspace: Workspace
     let resolvedGaps: ResolvedGaps
+    let hideCorner: OptimalHideCorner?
 
     @MainActor
-    init(_ workspace: Workspace) {
+    init(_ workspace: Workspace, hideCorner: OptimalHideCorner?) {
         self.workspace = workspace
         self.resolvedGaps = ResolvedGaps(gaps: config.gaps, monitor: workspace.workspaceMonitor)
+        self.hideCorner = hideCorner
     }
 }
 
@@ -171,6 +181,66 @@ extension TilingContainer {
                         context,
                     )
             }
+        }
+    }
+
+    /// Columns keep their own size and sit on a strip that scrolls so the focused column is in view. Columns
+    /// out of view are hidden in the corner, the same way windows of invisible workspaces are
+    @MainActor
+    fileprivate func layoutScrolling(_ point: CGPoint, width: CGFloat, height: CGFloat, hideCorner: OptimalHideCorner, _ context: LayoutContext) async throws {
+        let viewport = orientation == .h ? width : height
+        let gap = context.resolvedGaps.inner.get(orientation).toDouble()
+        let strip = ScrollingStrip(
+            columnWidths: children.map(\.effectiveScrollingColumnWidth),
+            focusedIndex: mostRecentChild?.ownIndex ?? 0,
+            viewport: viewport,
+            gap: gap,
+            peek: CGFloat(config.scrollingPeek),
+            previousOffset: scrollOffset,
+        )
+        scrollOffset = strip.offset
+        let neighbours = context.workspace.workspaceMonitor.neighbours(orientation)
+        for (i, child) in children.enumerated() {
+            let start = strip.starts[i]
+            let end = start + strip.sizes[i]
+            // A column cut by the edge stays where it is, half off screen, unless the cut part would land on
+            // the next monitor
+            let isOutOfView = end <= 0 || start >= viewport ||
+                (start < 0 && neighbours.before) || (end > viewport && neighbours.after)
+            if isOutOfView {
+                try await child.hideScrolledOutColumn(hideCorner)
+                continue
+            }
+            let childPoint = point.addingOffset(orientation, start)
+            let childWidth = orientation == .h ? strip.sizes[i] : width
+            let childHeight = orientation == .v ? strip.sizes[i] : height
+            let virtualPoint = childPoint.addingOffset(orientation, -gap / 2)
+            try await child.layoutRecursive(
+                childPoint,
+                width: childWidth,
+                height: childHeight,
+                virtual: Rect(
+                    topLeftX: virtualPoint.x,
+                    topLeftY: virtualPoint.y,
+                    width: orientation == .h ? childWidth + gap : childWidth,
+                    height: orientation == .v ? childHeight + gap : childHeight,
+                ),
+                context,
+            )
+        }
+    }
+}
+
+extension TreeNode {
+    @MainActor
+    fileprivate func hideScrolledOutColumn(_ corner: OptimalHideCorner) async throws {
+        lastAppliedLayoutPhysicalRect = nil
+        lastAppliedLayoutVirtualRect = nil
+        for window in allLeafWindowsRecursive where window.windowId != currentlyManipulatedWithMouseWindowId {
+            window.lastAppliedLayoutPhysicalRect = nil
+            window.lastAppliedLayoutVirtualRect = nil
+            // Test windows have no Accessibility frame to hide
+            try await (window as? MacWindow)?.hideInCorner(corner, rememberPosition: false)
         }
     }
 }

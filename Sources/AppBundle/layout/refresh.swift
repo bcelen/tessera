@@ -159,7 +159,7 @@ private func layoutWorkspaces() async throws {
     if !TrayMenuModel.shared.isEnabled {
         for workspace in Workspace.all {
             workspace.allLeafWindowsRecursive.forEach { ($0 as! MacWindow).unhideFromCorner() } // todo as!
-            try await workspace.layoutWorkspace() // Unhide tiling windows from corner
+            try await workspace.layoutWorkspace(hideCorner: nil) // Unhide tiling windows from corner
         }
         return
     }
@@ -193,7 +193,7 @@ private func layoutWorkspaces() async throws {
     for monitor in monitors {
         let workspace = monitor.activeWorkspace
         workspace.allLeafWindowsRecursive.forEach { ($0 as! MacWindow).unhideFromCorner() } // todo as!
-        try await workspace.layoutWorkspace()
+        try await workspace.layoutWorkspace(hideCorner: monitorToOptimalHideCorner[monitor.rect.topLeftCorner] ?? .bottomRightCorner)
     }
     for workspace in Workspace.all where !workspace.isVisible {
         let corner = monitorToOptimalHideCorner[workspace.workspaceMonitor.rect.topLeftCorner] ?? .bottomRightCorner
