@@ -47,6 +47,8 @@ struct Config: ConvenienceMutable {
     var accordionPadding: Int = 30
     var scrollingDefaultColumnWidth: Int = 50 // percent of the screen
     var scrollingPeek: Int = 40
+    var scrollingSwipeModifiers: NSEvent.ModifierFlags? = nil // nil: swiping is off
+    var scrollingAnimationDuration: Int = 0 // milliseconds, 0: no slide
     var enableNormalizationOppositeOrientationForNestedContainers: Bool = true
     var persistentWorkspaces: OrderedSet<String> = []
     var execOnWorkspaceChange: [String] = [] // todo deprecate

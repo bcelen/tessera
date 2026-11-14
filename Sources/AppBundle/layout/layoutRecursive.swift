@@ -198,36 +198,65 @@ extension TilingContainer {
             peek: CGFloat(config.scrollingPeek),
             previousOffset: scrollOffset,
         )
+        let previousOffset = scrollOffset
         scrollOffset = strip.offset
         let neighbours = context.workspace.workspaceMonitor.neighbours(orientation)
-        for (i, child) in children.enumerated() {
-            let start = strip.starts[i]
-            let end = start + strip.sizes[i]
+        let isOutOfView = { (start: CGFloat, size: CGFloat) -> Bool in
             // A column cut by the edge stays where it is, half off screen, unless the cut part would land on
             // the next monitor
-            let isOutOfView = end <= 0 || start >= viewport ||
-                (start < 0 && neighbours.before) || (end > viewport && neighbours.after)
-            if isOutOfView {
+            start + size <= 0 || start >= viewport || (start < 0 && neighbours.before) || (start + size > viewport && neighbours.after)
+        }
+        let duration = config.scrollingAnimationDuration
+        if duration > 0 && abs(strip.offset - previousOffset) > 1 {
+            // Slide in steps, each moving every column in view through Accessibility. setAxFrame drops a frame
+            // the app hasn't applied yet when the next one arrives, so a slow app skips steps instead of lagging
+            let frames = max(2, duration / 16)
+            for frame in 1 ..< frames {
+                let t = CGFloat(frame) / CGFloat(frames)
+                let eased = 1 - (1 - t) * (1 - t) * (1 - t) // Ease out: fast start, gentle landing
+                let shift = (strip.offset - previousOffset) * (1 - eased)
+                for (i, child) in children.enumerated() where !isOutOfView(strip.starts[i] + shift, strip.sizes[i]) {
+                    try await layoutScrollingColumn(child, at: strip.starts[i] + shift, size: strip.sizes[i], point, width: width, height: height, gap: gap, context)
+                }
+                try await Task.sleep(for: .milliseconds(16))
+            }
+        }
+        for (i, child) in children.enumerated() {
+            if isOutOfView(strip.starts[i], strip.sizes[i]) {
                 try await child.hideScrolledOutColumn(hideCorner)
                 continue
             }
-            let childPoint = point.addingOffset(orientation, start)
-            let childWidth = orientation == .h ? strip.sizes[i] : width
-            let childHeight = orientation == .v ? strip.sizes[i] : height
-            let virtualPoint = childPoint.addingOffset(orientation, -gap / 2)
-            try await child.layoutRecursive(
-                childPoint,
-                width: childWidth,
-                height: childHeight,
-                virtual: Rect(
-                    topLeftX: virtualPoint.x,
-                    topLeftY: virtualPoint.y,
-                    width: orientation == .h ? childWidth + gap : childWidth,
-                    height: orientation == .v ? childHeight + gap : childHeight,
-                ),
-                context,
-            )
+            try await layoutScrollingColumn(child, at: strip.starts[i], size: strip.sizes[i], point, width: width, height: height, gap: gap, context)
         }
+    }
+
+    @MainActor
+    private func layoutScrollingColumn(
+        _ child: TreeNode,
+        at start: CGFloat,
+        size: CGFloat,
+        _ point: CGPoint,
+        width: CGFloat,
+        height: CGFloat,
+        gap: CGFloat,
+        _ context: LayoutContext,
+    ) async throws {
+        let childPoint = point.addingOffset(orientation, start)
+        let childWidth = orientation == .h ? size : width
+        let childHeight = orientation == .v ? size : height
+        let virtualPoint = childPoint.addingOffset(orientation, -gap / 2)
+        try await child.layoutRecursive(
+            childPoint,
+            width: childWidth,
+            height: childHeight,
+            virtual: Rect(
+                topLeftX: virtualPoint.x,
+                topLeftY: virtualPoint.y,
+                width: orientation == .h ? childWidth + gap : childWidth,
+                height: orientation == .v ? childHeight + gap : childHeight,
+            ),
+            context,
+        )
     }
 }
 

@@ -27,8 +27,10 @@ With several `<width>` arguments, the command cycles: it picks the first one tha
 and wraps around to the first one after the last.
 List them from narrowest to widest.
 
-`resize width` works on columns too, in points rather than percent, and `balance-sizes` puts every column back to the
-default width.
+The widths are whatever you list; there is nothing special about thirds and halves.
+Dragging a column's edge with the mouse sets its width too, and it stays until something changes it.
+`resize width` works on columns as well, in points rather than percent, and `balance-sizes` puts every column back
+to the default width.
 
 // =========================================================== Options
 include::./util/conditional-options-header.adoc[]

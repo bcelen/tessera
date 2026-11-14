@@ -65,6 +65,11 @@ Stack several windows in one column with `join-with`.
 as if `--root` were given. `layout scrolling tiles` toggles the whole workspace between the two.
 If another monitor sits next to the edge a column would cross, that column is hidden rather than shown cut.
 
+The strip follows focus, so `focus left|right` and anything else that moves focus scrolls it. With
+`scrolling-swipe-modifiers` set, holding those modifiers and swiping two fingers sideways steps one column per
+swipe; a mouse wheel steps one column per notch. `scrolling-animation-duration` makes the strip slide rather than jump.
+Dragging a column's edge with the mouse sets its width, and the column keeps it.
+
 // =========================================================== Examples
 include::./util/conditional-examples-header.adoc[]
 

@@ -70,7 +70,9 @@ place --x 0 --y 50% --width 100% --height 50%     # the lower half
 **`layout scrolling`** turns a workspace into a strip of columns, after niri and PaperWM. Each column
 keeps its own width, so opening a window adds a column instead of squeezing the others, and the strip
 scrolls to follow focus with a sliver of the neighbours showing at the edges. **`column-width`** sets
-the focused column's width, and cycles when given several.
+the focused column's width, and cycles when given several; dragging a column's edge sets it too. With
+`scrolling-swipe-modifiers` set, a modifier plus a two-finger swipe steps through the columns, and
+`scrolling-animation-duration` turns the jump into a slide.
 
 ```
 layout scrolling tiles             # toggle the whole workspace

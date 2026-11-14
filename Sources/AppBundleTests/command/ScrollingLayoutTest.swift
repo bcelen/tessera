@@ -198,11 +198,85 @@ final class ScrollingLayoutTest: XCTestCase {
         assertEquals(node.columnWidth, nil)
     }
 
+    // =========================================================== Slide
+
+    func testSlideEndsWhereAJumpWould() async throws {
+        let workspace = Workspace.get(byName: name)
+        workspace.rootTilingContainer.layout = .scrolling
+        let windows = (1 ... 4).map { TestWindow.new(id: UInt32($0), parent: workspace.rootTilingContainer) }
+        _ = windows[0].focusWindow()
+        try await workspace.layoutWorkspace(hideCorner: .bottomRightCorner)
+
+        config.scrollingAnimationDuration = 48
+        _ = windows[2].focusWindow()
+        try await workspace.layoutWorkspace(hideCorner: .bottomRightCorner)
+
+        assertEquals(windows[2].rectForTests?.topLeftX, 920)
+        assertEquals(windows[3].rectForTests?.topLeftX, 1880)
+        assertEquals(windows[0].lastAppliedLayoutPhysicalRect == nil, true)
+    }
+
+    // =========================================================== Swipe
+
+    func testSwipeStepsOncePerSwipeAndSwallowsItsMomentum() {
+        var tracker = ScrollingSwipeTracker()
+        assertEquals(tracker.handle(.trackpad(-10, .began), isArmed: true).step, nil)
+        assertEquals(tracker.handle(.trackpad(-25, .changed), isArmed: true).step, 1)
+        // A long swipe still counts once
+        assertEquals(tracker.handle(.trackpad(-200, .changed), isArmed: true).step, nil)
+        assertEquals(tracker.handle(.trackpad(0, .ended), isArmed: true).consume, true)
+        // Momentum belongs to the swipe even once the modifiers are released
+        assertEquals(tracker.handle(.trackpad(-50, .none, momentum: .began), isArmed: false).consume, true)
+        assertEquals(tracker.handle(.trackpad(0, .none, momentum: .ended), isArmed: false).consume, true)
+        assertEquals(tracker.handle(.trackpad(-5, .none), isArmed: false).consume, false)
+    }
+
+    func testSwipeRightGoesToThePreviousColumn() {
+        var tracker = ScrollingSwipeTracker()
+        _ = tracker.handle(.trackpad(10, .began), isArmed: true)
+        assertEquals(tracker.handle(.trackpad(25, .changed), isArmed: true).step, -1)
+    }
+
+    func testSwipeWithoutModifiersPassesThroughEvenIfTheyArePressedLater() {
+        var tracker = ScrollingSwipeTracker()
+        assertEquals(tracker.handle(.trackpad(-10, .began), isArmed: false).consume, false)
+        assertEquals(tracker.handle(.trackpad(-100, .changed), isArmed: true).consume, false)
+    }
+
+    func testWheelNotchIsOneStep() {
+        var tracker = ScrollingSwipeTracker()
+        let notchDown = ScrollSample(deltaX: 0, deltaY: -1, isContinuous: false, phase: .none, momentumPhase: .none)
+        assertEquals(tracker.handle(notchDown, isArmed: true).step, 1)
+        assertEquals(tracker.handle(notchDown, isArmed: false).consume, false)
+    }
+
+    func testParseSwipeConfig() {
+        let result = parseConfig(
+            """
+            scrolling-swipe-modifiers = 'ctrl-alt-shift-cmd'
+            scrolling-animation-duration = 150
+            """,
+        )
+        assertEquals(result.errors, [])
+        assertEquals(result.config.scrollingSwipeModifiers, [.control, .option, .shift, .command])
+        assertEquals(result.config.scrollingAnimationDuration, 150)
+
+        assertEquals(parseConfig("scrolling-swipe-modifiers = ''").config.scrollingSwipeModifiers, nil)
+        assertEquals(parseConfig("scrolling-swipe-modifiers = 'hyper'").errors.count, 1)
+        assertEquals(parseConfig("scrolling-animation-duration = 5000").errors.count, 1)
+    }
+
     private func scrollingWorkspaceWithFocusedWindow() -> Window {
         let workspace = Workspace.get(byName: name)
         workspace.rootTilingContainer.layout = .scrolling
         let window = TestWindow.new(id: 1, parent: workspace.rootTilingContainer)
         _ = window.focusWindow()
         return window
+    }
+}
+
+extension ScrollSample {
+    fileprivate static func trackpad(_ deltaX: CGFloat, _ phase: Phase, momentum: Phase = .none) -> ScrollSample {
+        ScrollSample(deltaX: deltaX, deltaY: 0, isContinuous: true, phase: phase, momentumPhase: momentum)
     }
 }

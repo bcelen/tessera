@@ -37,6 +37,12 @@ accordion-padding = 30
 # 'scrolling-peek' points of the neighbouring columns stay in view at the screen edges
 scrolling-default-column-width = 50
 scrolling-peek = 40
+# Hold these modifiers and swipe two fingers sideways (or turn a mouse wheel) to step through the
+# columns, for example 'ctrl-alt-shift-cmd'. Empty: off
+scrolling-swipe-modifiers = ''
+# Slide to the new column over this many milliseconds instead of jumping. 0: off. Whether it looks
+# smooth depends on how fast the apps move their windows; 150 is a good start
+scrolling-animation-duration = 0
 
 # Possible values: tiles|accordion|scrolling
 default-root-container-layout = 'tiles'

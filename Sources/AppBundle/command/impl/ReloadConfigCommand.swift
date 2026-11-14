@@ -63,6 +63,7 @@ struct ReloadConfigResult {
         await activateMode_nonCancellable(nextMode)
         syncStartAtLogin()
         syncFocusFollowsMouse(config)
+        syncScrollingSwipe(config)
         syncConfigFileWatcher()
     }
 

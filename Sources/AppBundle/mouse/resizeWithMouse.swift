@@ -47,6 +47,7 @@ private func resizeWithMouse(_ window: Window) async throws { // todo cover with
         case .tilingContainer:
             guard let rect = try await window.getAxRect(.cancellable) else { return }
             guard let lastAppliedLayoutRect = window.lastAppliedLayoutPhysicalRect else { return }
+            resizeScrollingColumnWithMouse(window, rect, lastAppliedLayoutRect)
             let (lParent, lOwnIndex) = window.closestParent(hasChildrenInDirection: .left, withLayout: .tiles) ?? (nil, nil)
             let (dParent, dOwnIndex) = window.closestParent(hasChildrenInDirection: .down, withLayout: .tiles) ?? (nil, nil)
             let (uParent, uOwnIndex) = window.closestParent(hasChildrenInDirection: .up, withLayout: .tiles) ?? (nil, nil)
@@ -92,5 +93,17 @@ extension TreeNode {
         for child in children {
             child.resetResizeWeightBeforeResizeRecursive()
         }
+    }
+}
+
+/// A column of the scrolling layout has a width of its own rather than a share of the screen, so it simply takes
+/// whatever width the window was dragged to, and keeps it. Either edge works
+@MainActor
+private func resizeScrollingColumnWithMouse(_ window: Window, _ rect: Rect, _ lastAppliedLayoutRect: Rect) {
+    guard let column = window.scrollingColumn, let strip = column.parent as? TilingContainer,
+          let (viewport, gap) = strip.scrollingViewport else { return }
+    let size = rect.getDimension(strip.orientation)
+    if abs(size - lastAppliedLayoutRect.getDimension(strip.orientation)) > 5 { // Same slack as for tiles below
+        column.scrollingColumnWidth = scrollingColumnWidth(size: size, viewport: viewport, gap: gap)
     }
 }

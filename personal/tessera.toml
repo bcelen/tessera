@@ -26,6 +26,11 @@ accordion-padding = 60
 default-root-container-layout = 'tiles'
 default-root-container-orientation = 'auto'
 
+# Scrolling layout (alt-quote). Hyper plus a two-finger sideways swipe steps one column.
+# Set the duration to 150 to try a slide instead of a jump; 0 jumps
+scrolling-swipe-modifiers = 'ctrl-alt-shift-cmd'
+scrolling-animation-duration = 0
+
 automatically-unhide-macos-hidden-apps = false
 
 # Lettered workspaces are W X Y Z, not A B C D. On a US layout alt-c is how you

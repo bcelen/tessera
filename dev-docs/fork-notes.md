@@ -227,9 +227,24 @@ Decisions:
   out of the layout. `normalizeContainers` skips that case.
 - `resize` works on columns too (in points), and `balance-sizes` resets every column to the default.
   Snapshots store the width as an optional `columnWidth`, so older snapshot files still load.
-- Not done: dragging a column's edge with the mouse. The layout snaps it back, since
-  `resizeWithMouse` only knows tiles. Vertical scrolling works in principle but macOS keeps windows
-  below the menu bar, so a column cut at the top gets pushed down; use it horizontally.
+- Dragging a column's edge sets its width (`resizeScrollingColumnWithMouse`). Dragging a window onto
+  another swaps them, and each keeps its width since the width lives on the node.
+- Vertical scrolling works in principle but macOS keeps windows below the menu bar, so a column cut at
+  the top gets pushed down; use it horizontally.
+
+Swipe (`mouse/scrollingSwipe.swift`): a CGEvent tap, not an NSEvent global monitor, because a monitor
+can only watch and the app under the pointer would scroll too. The tap needs no permission beyond
+Accessibility. `ScrollingSwipeTracker` is the pure part: whether the modifiers were held is decided
+when a swipe begins, the swipe steps once however long it is, and the tracker swallows the rest of it
+including momentum, so releasing the modifiers mid-swipe doesn't leak a scroll into the app. Wheel
+notches step one each. Three- and four-finger swipes belong to macOS and can't be tapped.
+
+Slide (`scrolling-animation-duration`): the strip is moved in about 16 ms steps inside the layout
+pass, each step moving every column in view. Following the fingers live was ruled out: the only
+public way to move another app's window is Accessibility, one message per window, and apps apply
+frames at their own pace. `MacApp.setAxFrame` cancels a frame the app hasn't applied when the next
+arrives, so a slow app skips steps rather than lagging behind. The slide holds the refresh session
+for its duration, which is why it is capped at 1000 ms and off by default.
 
 ## Menu bar
 

@@ -148,6 +148,8 @@ private let configParser: [String: any ParserProtocol<Config>] = [
     "accordion-padding": Parser(\.accordionPadding, parseInt),
     "scrolling-default-column-width": Parser(\.scrollingDefaultColumnWidth, parseInt),
     "scrolling-peek": Parser(\.scrollingPeek, parseInt),
+    "scrolling-swipe-modifiers": Parser(\.scrollingSwipeModifiers, parseScrollingSwipeModifiers),
+    "scrolling-animation-duration": Parser(\.scrollingAnimationDuration, parseScrollingAnimationDuration),
     persistentWorkspacesKey: Parser(\.persistentWorkspaces, parsePersistentWorkspaces),
     "exec-on-workspace-change": Parser(\.execOnWorkspaceChange, parseArrayOfStrings),
     "exec": Parser(\.execConfig, parseExecConfig),
@@ -329,6 +331,22 @@ func parseConfigVersion(_ raw: OrderedJson, _ backtrace: ConfigBacktrace) -> Res
 
 func parseInt(_ raw: OrderedJson, _ backtrace: ConfigBacktrace) -> ResOrConfigParseDiagnostic<Int> {
     raw.asIntOrNil.toResult(expectedActualTypeDiagnostic(expected: .int, actual: raw.tomlType, backtrace))
+}
+
+/// 'ctrl-alt-shift-cmd' and the like. An empty string turns swiping off
+func parseScrollingSwipeModifiers(_ raw: OrderedJson, _ backtrace: ConfigBacktrace) -> ResOrConfigParseDiagnostic<NSEvent.ModifierFlags?> {
+    parseString(raw, backtrace).flatMap { str -> ResOrConfigParseDiagnostic<NSEvent.ModifierFlags?> in
+        if str.isEmpty { return .success(nil) }
+        return str.split(separator: "-")
+            .mapAllOrFailure { modifiersMap[String($0)].toResult(.init(backtrace, "Can't parse modifiers in '\(str)'. Possible values: shift, alt, ctrl, cmd")) }
+            .map { NSEvent.ModifierFlags($0) }
+    }
+}
+
+func parseScrollingAnimationDuration(_ raw: OrderedJson, _ backtrace: ConfigBacktrace) -> ResOrConfigParseDiagnostic<Int> {
+    parseInt(raw, backtrace).flatMap {
+        (0 ... 1000).contains($0) ? .success($0) : .failure(.init(backtrace, "scrolling-animation-duration must be in [0, 1000] range"))
+    }
 }
 
 func parseString(_ raw: OrderedJson, _ backtrace: ConfigBacktrace) -> ResOrConfigParseDiagnostic<String> {
