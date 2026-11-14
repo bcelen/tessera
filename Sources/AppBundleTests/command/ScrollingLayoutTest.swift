@@ -250,6 +250,24 @@ final class ScrollingLayoutTest: XCTestCase {
         assertEquals(tracker.handle(notchDown, isArmed: false).consume, false)
     }
 
+    func testSmoothWheelStepsEveryThreshold() {
+        var tracker = ScrollingSwipeTracker()
+        let spin = ScrollSample(deltaX: -12, deltaY: 0, isContinuous: true, phase: .none, momentumPhase: .none)
+        assertEquals(tracker.handle(spin, isArmed: true).step, nil)
+        assertEquals(tracker.handle(spin, isArmed: true).step, nil)
+        assertEquals(tracker.handle(spin, isArmed: true).step, 1)
+        assertEquals(tracker.handle(spin, isArmed: true).step, nil)
+        assertEquals(tracker.handle(spin, isArmed: false).consume, false)
+    }
+
+    func testSmoothWheelIsNotSwallowedAfterASwipeWithoutMomentum() {
+        var tracker = ScrollingSwipeTracker()
+        _ = tracker.handle(.trackpad(-40, .began), isArmed: true)
+        _ = tracker.handle(.trackpad(0, .ended), isArmed: true)
+        let spin = ScrollSample(deltaX: 0, deltaY: -12, isContinuous: true, phase: .none, momentumPhase: .none)
+        assertEquals(tracker.handle(spin, isArmed: false).consume, false)
+    }
+
     func testParseSwipeConfig() {
         let result = parseConfig(
             """

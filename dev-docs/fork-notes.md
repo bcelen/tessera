@@ -237,7 +237,9 @@ can only watch and the app under the pointer would scroll too. The tap needs no 
 Accessibility. `ScrollingSwipeTracker` is the pure part: whether the modifiers were held is decided
 when a swipe begins, the swipe steps once however long it is, and the tracker swallows the rest of it
 including momentum, so releasing the modifiers mid-swipe doesn't leak a scroll into the app. Wheel
-notches step one each. Three- and four-finger swipes belong to macOS and can't be tapped.
+notches step one each. Smooth-scrolling wheels (Logitech with Options+, including the MX thumb wheel)
+send continuous events with no gesture phases, so they step once per threshold of spin instead.
+Whichever axis moved more counts, so a vertical wheel works too. Three- and four-finger swipes belong to macOS and can't be tapped.
 
 Slide (`scrolling-animation-duration`): the strip is moved in about 16 ms steps inside the layout
 pass, each step moving every column in view. Following the fingers live was ruled out: the only

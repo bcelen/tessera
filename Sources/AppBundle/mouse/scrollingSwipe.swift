@@ -105,6 +105,9 @@ struct ScrollSample: Equatable {
 }
 
 extension ScrollSample {
+    /// Sideways or up and down, whichever moved more. Up counts like left
+    fileprivate var dominantDelta: CGFloat { abs(deltaX) >= abs(deltaY) ? deltaX : deltaY }
+
     init(_ event: CGEvent) {
         self.init(
             deltaX: CGFloat(event.getDoubleValueField(.scrollWheelEventPointDeltaAxis2)),
@@ -148,6 +151,7 @@ struct ScrollingSwipeTracker {
     private var isConsuming = false
     private var hasStepped = false
     private var accumulated: CGFloat = 0
+    private var wheelAccumulated: CGFloat = 0
 
     /// - Parameter isArmed: the modifiers are held and the focused workspace is scrolling
     /// - Returns: whether to swallow the event, and +1 or -1 to step to the next or previous column
@@ -155,8 +159,21 @@ struct ScrollingSwipeTracker {
         if !sample.isContinuous {
             // A wheel notch is one step. Vertical wheels count too, wheel down for the next column
             guard isArmed else { return (false, nil) }
-            let delta = abs(sample.deltaX) >= abs(sample.deltaY) ? sample.deltaX : sample.deltaY
+            let delta = sample.dominantDelta
             return (true, delta == 0 ? nil : delta < 0 ? 1 : -1)
+        }
+        if sample.phase == .none && sample.momentumPhase == .none {
+            // Smooth-scrolling wheels, like Logitech's with Options+, send continuous events with no gesture phases.
+            // There's no swipe to count once, so every threshold's worth of spin is a step
+            guard isArmed else {
+                wheelAccumulated = 0
+                return (false, nil)
+            }
+            wheelAccumulated += sample.dominantDelta
+            guard abs(wheelAccumulated) >= ScrollingSwipeTracker.threshold else { return (true, nil) }
+            let step = wheelAccumulated < 0 ? 1 : -1
+            wheelAccumulated = 0
+            return (true, step)
         }
         if sample.phase == .began {
             isConsuming = isArmed
@@ -166,7 +183,7 @@ struct ScrollingSwipeTracker {
         guard isConsuming else { return (false, nil) }
         var step: Int? = nil
         if !hasStepped && sample.momentumPhase == .none {
-            accumulated += sample.deltaX
+            accumulated += sample.dominantDelta
             if abs(accumulated) >= ScrollingSwipeTracker.threshold {
                 // Fingers moving left drag the strip left, which brings in the column on the right
                 step = accumulated < 0 ? 1 : -1
