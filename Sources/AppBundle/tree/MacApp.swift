@@ -193,7 +193,7 @@ final class MacApp: AbstractApp {
             }
             future.complete(rect)
         }
-        return future.blockingGet(timeout: terminationAxTimeout) ?? nil
+        return future.blockingGet(timeout: terminationAxTimeout).flatMap { $0 } // A timeout and a missing rect are both nil
     }
 
     func isWindowHeuristic(_ windowId: UInt32, _ windowLevel: MacOsWindowLevel?, _ cm: CancellationMode) async throws -> Bool {
