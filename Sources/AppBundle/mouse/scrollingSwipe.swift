@@ -65,21 +65,49 @@ private func handleSwipe(_ sample: ScrollSample, _ flags: CGEventFlags) -> Bool 
         isArmed: !modifiers.isEmpty && flags.containsAll(modifiers) && root.layout == .scrolling,
     )
     if let step = decision.step {
+        pendingSwipeSteps = max(-maxPendingSwipeSteps, min(maxPendingSwipeSteps, pendingSwipeSteps + step))
+        if !isRunningSwipeSteps {
+            isRunningSwipeSteps = true
+            Task.startUnstructured { @MainActor in
+                defer {
+                    isRunningSwipeSteps = false
+                    pendingSwipeSteps = 0
+                }
+                try await runPendingSwipeSteps()
+            }
+        }
+    }
+    return decision.consume
+}
+
+/// A wheel spun fast gives steps faster than focus can run them, and two focus commands running at once trip over
+/// each other at every await. So steps queue up here and run one after another
+@MainActor private var pendingSwipeSteps = 0
+@MainActor private var isRunningSwipeSteps = false
+private let maxPendingSwipeSteps = 4
+
+@MainActor
+private func runPendingSwipeSteps() async throws {
+    guard let token: RunSessionGuard = .isServerEnabled else { return }
+    while pendingSwipeSteps != 0 {
+        let step = pendingSwipeSteps > 0 ? 1 : -1
+        pendingSwipeSteps -= step
+        let root = focus.workspace.rootTilingContainer
+        guard root.layout == .scrolling else { return }
         let direction: CardinalDirection = switch (root.orientation, step > 0) {
             case (.h, true): .right
             case (.h, false): .left
             case (.v, true): .down
             case (.v, false): .up
         }
-        Task.startUnstructured { @MainActor in
-            guard let token: RunSessionGuard = .isServerEnabled else { return }
-            try await runLightSession(.scrollingSwipe, token) {
-                let args = FocusCmdArgs(rawArgs: [].slice, cardinalOrDfsDirection: .direction(direction))
-                _ = await FocusCommand(args: args).run(.defaultEnv, .emptyStdin)
-            }
+        try await runLightSession(.scrollingSwipe, token) {
+            var args = FocusCmdArgs(rawArgs: [].slice, cardinalOrDfsDirection: .direction(direction))
+            // The swipe walks the columns. Floating windows aren't columns, and treating them as tiles means AX
+            // calls in the middle of the command
+            args.floatingAsTiling = false
+            _ = await FocusCommand(args: args).run(.defaultEnv, .emptyStdin)
         }
     }
-    return decision.consume
 }
 
 extension CGEventFlags {
