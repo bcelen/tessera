@@ -135,6 +135,9 @@ private let moveOutMacosUnconventionalWindow = "moving macOS fullscreen, minimiz
     _ direction: CardinalDirection,
 ) {
     let prevRoot = workspace.rootTilingContainer
+    // A scrolling strip only works as the root. Wrapping it would bury it in a tiled root, so at the end of the
+    // strip the window just stays where it is
+    if prevRoot.layout == .scrolling { return }
     prevRoot.unbindFromParent()
     // Force tiles layout
     _ = TilingContainer(parent: workspace, adaptiveWeight: WEIGHT_AUTO, direction.orientation, .tiles, index: 0)

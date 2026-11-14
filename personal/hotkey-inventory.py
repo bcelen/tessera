@@ -493,8 +493,9 @@ function run(argv) {
 }
 """
 
-# AXMenuItemCmdModifiers is a bitmask where cmd is implied unless bit 0 is set.
-AX_MODS = [(1, "-cmd"), (2, "shift"), (4, "opt"), (8, "ctrl")]
+# AXMenuItemCmdModifiers is a bitmask (kMenuShiftModifier and friends): 1 shift, 2 option, 4 control, and 8
+# means no cmd. Cmd is implied unless bit 3 is set.
+AX_MODS = [(8, "-cmd"), (1, "shift"), (2, "opt"), (4, "ctrl")]
 
 
 def list_gui_apps():
@@ -532,12 +533,12 @@ def read_app_menus(app_name: str):
 
     for item in payload:
         mask = int(item.get("mods") or 0)
-        mods = [] if (mask & 1) else ["cmd"]
-        if mask & 2:
+        mods = [] if (mask & 8) else ["cmd"]
+        if mask & 1:
             mods.append("shift")
-        if mask & 4:
+        if mask & 2:
             mods.append("opt")
-        if mask & 8:
+        if mask & 4:
             mods.append("ctrl")
         out.append(Binding(
             chord=chord(mods, str(item.get("key", "?"))),

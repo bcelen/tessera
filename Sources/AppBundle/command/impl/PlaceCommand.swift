@@ -39,6 +39,8 @@ struct PlaceCommand: Command {
             // Remembered so that the window comes back at this size after being hidden in a corner
             window.lastFloatingSize = size
         }
+        // Otherwise the next layout pass would stretch the window back over the screen
+        window.isFullscreen = false
         window.setAxFrame(topLeft, size)
         return .succ
     }

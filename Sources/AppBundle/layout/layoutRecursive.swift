@@ -190,8 +190,11 @@ extension TilingContainer {
     fileprivate func layoutScrolling(_ point: CGPoint, width: CGFloat, height: CGFloat, hideCorner: OptimalHideCorner, _ context: LayoutContext) async throws {
         let viewport = orientation == .h ? width : height
         let gap = context.resolvedGaps.inner.get(orientation).toDouble()
+        // The strip is planned for these columns. The slide below sleeps between frames, and a window can open
+        // or close meanwhile, so the frames keep to this list and the slide stops if the tree changes
+        let columns = children
         let strip = ScrollingStrip(
-            columnWidths: children.map(\.effectiveScrollingColumnWidth),
+            columnWidths: columns.map(\.effectiveScrollingColumnWidth),
             focusedIndex: mostRecentChild?.ownIndex ?? 0,
             viewport: viewport,
             gap: gap,
@@ -215,13 +218,18 @@ extension TilingContainer {
                 let t = CGFloat(frame) / CGFloat(frames)
                 let eased = 1 - (1 - t) * (1 - t) * (1 - t) // Ease out: fast start, gentle landing
                 let shift = (strip.offset - previousOffset) * (1 - eased)
-                for (i, child) in children.enumerated() where !isOutOfView(strip.starts[i] + shift, strip.sizes[i]) {
+                for (i, child) in columns.enumerated() where !isOutOfView(strip.starts[i] + shift, strip.sizes[i]) {
                     try await layoutScrollingColumn(child, at: strip.starts[i] + shift, size: strip.sizes[i], point, width: width, height: height, gap: gap, context)
                 }
                 try await Task.sleep(for: .milliseconds(16))
+                if !children.elementsEqual(columns, by: ===) {
+                    // Plan again for the new columns, from wherever the slide got to
+                    scrollOffset = previousOffset + (strip.offset - previousOffset) * eased
+                    return try await layoutScrolling(point, width: width, height: height, hideCorner: hideCorner, context)
+                }
             }
         }
-        for (i, child) in children.enumerated() {
+        for (i, child) in columns.enumerated() {
             if isOutOfView(strip.starts[i], strip.sizes[i]) {
                 try await child.hideScrolledOutColumn(hideCorner)
                 continue

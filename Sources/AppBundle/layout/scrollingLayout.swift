@@ -114,10 +114,19 @@ extension Monitor {
     /// A column partly out of view would show up on that monitor, so it is hidden instead
     @MainActor func neighbours(_ orientation: Orientation) -> (before: Bool, after: Bool) {
         let rect = self.rect
-        let center = rect.center
-        let before = orientation == .h ? CGPoint(x: rect.minX - 1, y: center.y) : CGPoint(x: center.x, y: rect.minY - 1)
-        let after = orientation == .h ? CGPoint(x: rect.maxX + 1, y: center.y) : CGPoint(x: center.x, y: rect.maxY + 1)
-        let all = monitors
-        return (all.contains { $0.rect.contains(before) }, all.contains { $0.rect.contains(after) })
+        // Any monitor touching the edge counts, even one that covers only part of it, since a column runs the
+        // whole height (or width) of the screen
+        func touches(_ other: Rect, atEdge edge: CGFloat, isAfter: Bool) -> Bool {
+            let (near, lo, hi, otherLo, otherHi) = orientation == .h
+                ? (isAfter ? other.minX : other.maxX, rect.minY, rect.maxY, other.minY, other.maxY)
+                : (isAfter ? other.minY : other.maxY, rect.minX, rect.maxX, other.minX, other.maxX)
+            return abs(near - edge) <= 1 && otherLo < hi && otherHi > lo
+        }
+        let others = monitors.map(\.rect)
+        let (beforeEdge, afterEdge) = orientation == .h ? (rect.minX, rect.maxX) : (rect.minY, rect.maxY)
+        return (
+            others.contains { touches($0, atEdge: beforeEdge, isAfter: false) },
+            others.contains { touches($0, atEdge: afterEdge, isAfter: true) },
+        )
     }
 }

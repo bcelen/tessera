@@ -62,7 +62,8 @@ private func handleSwipe(_ sample: ScrollSample, _ flags: CGEventFlags) -> Bool 
     let root = focus.workspace.rootTilingContainer
     let decision = swipeTracker.handle(
         sample,
-        isArmed: !modifiers.isEmpty && flags.containsAll(modifiers) && root.layout == .scrolling,
+        isArmed: TrayMenuModel.shared.isEnabled && !modifiers.isEmpty && flags.containsAll(modifiers) &&
+            root.layout == .scrolling,
     )
     if let step = decision.step {
         pendingSwipeSteps = max(-maxPendingSwipeSteps, min(maxPendingSwipeSteps, pendingSwipeSteps + step))

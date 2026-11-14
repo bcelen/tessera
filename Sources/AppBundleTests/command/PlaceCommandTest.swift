@@ -55,6 +55,21 @@ final class PlaceCommandTest: XCTestCase {
         assertEquals(window.lastFloatingSize, CGSize(width: 1920, height: 540))
     }
 
+    /// A fullscreen window that is placed must end up at the place, not stretched back over the screen
+    func testPlacingAFullscreenWindowEndsFullscreen() async {
+        let workspace = Workspace.get(byName: name).apply {
+            $0.rootTilingContainer.apply { TestWindow.new(id: 1, parent: $0) }
+        }
+        assertEquals(workspace.focusWorkspace(), true)
+        let window = Window.get(byId: 1).orDie()
+        assertEquals(window.focusWindow(), true)
+        window.isFullscreen = true
+
+        await parseCommand("place --x 0 --y 50% --width 100% --height 50%").cmdOrDie.run(.defaultEnv, .emptyStdin)
+
+        assertEquals(window.isFullscreen, false)
+    }
+
     func testSizeOnlyKeepsPosition() async {
         let workspace = Workspace.get(byName: name).apply {
             TestWindow.new(id: 1, parent: $0.floatingWindowsContainer, rect: Rect(topLeftX: 100, topLeftY: 200, width: 10, height: 10))

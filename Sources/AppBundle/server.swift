@@ -40,7 +40,10 @@ private func newConnection(_ connection: NWConnection) async { // todo add exit 
         await answerToClient(ans)
     }
     func answerToClient(_ ans: ServerAnswer) async {
-        _ = await connection.writeAtomic(ans)
+        if case .posix(.EMSGSIZE)? = await connection.writeAtomic(ans).error {
+            // Too big to send. Say so, or the client would wait for an answer forever
+            await answerToClient(exitCode: EXIT_CODE_TWO, stderr: "The answer is too large to send over the socket")
+        }
     }
 
     guard let clientVersion = await connection.readUInt32().getIgnoringErrorsOrNil() else { return }

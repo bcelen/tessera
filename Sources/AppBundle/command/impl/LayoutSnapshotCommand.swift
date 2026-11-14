@@ -247,12 +247,13 @@ struct LayoutSnapshotCommand: Command {
 }
 
 extension Window {
-    /// Tiled or floating, so visible when its workspace is. Windows that macOS has hidden, minimized or
-    /// taken fullscreen sit in their own containers and must not be pulled into a tile by a restore
+    /// Tiled, so visible when its workspace is. Floating windows are left alone, as the docs promise: one could
+    /// be sticky, or a scratchpad window that is out. Windows that macOS has hidden, minimized or taken
+    /// fullscreen sit in their own containers and must not be pulled into a tile by a restore either
     var isRestorable: Bool {
         switch windowParentCases {
-            case .tilingContainer, .floatingWindowsContainer: true
-            case .unbound, .macosMinimizedWindowsContainer, .macosHiddenAppsWindowsContainer,
+            case .tilingContainer: true
+            case .floatingWindowsContainer, .unbound, .macosMinimizedWindowsContainer, .macosHiddenAppsWindowsContainer,
                  .macosFullscreenWindowsContainer, .macosPopupWindowsContainer: false
         }
     }

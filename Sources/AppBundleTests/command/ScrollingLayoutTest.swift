@@ -105,6 +105,23 @@ final class ScrollingLayoutTest: XCTestCase {
         assertEquals(workspace.rootTilingContainer.layoutDescription, .h_scrolling([.v_tiles([.window(1), .window(2)])]))
     }
 
+    /// Moving the last column further out must not wrap the strip in a tiled root: scrolling only works there
+    func testMovingPastTheEndOfTheStripKeepsTheScrollingRoot() async {
+        let workspace = Workspace.get(byName: name)
+        let root = workspace.rootTilingContainer
+        root.layout = .scrolling
+        TestWindow.new(id: 1, parent: root)
+        TestWindow.new(id: 2, parent: root)
+        let last = TestWindow.new(id: 3, parent: root)
+        assertEquals(last.focusWindow(), true)
+
+        await parseCommand("move right").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        await parseCommand("move down").cmdOrDie.run(.defaultEnv, .emptyStdin)
+
+        assertEquals(workspace.rootTilingContainer, root)
+        assertEquals(workspace.rootTilingContainer.layoutDescription, .h_scrolling([.window(1), .window(2), .window(3)]))
+    }
+
     // =========================================================== layout command
 
     func testLayoutScrollingAlwaysActsOnTheRoot() async {

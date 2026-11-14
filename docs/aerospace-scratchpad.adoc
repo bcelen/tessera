@@ -33,8 +33,9 @@ reappears exactly where you left it.
 You can have as many independent scratchpads as you want by passing different `--name` values.
 Without `--name`, all invocations share a single scratchpad called `default`.
 
-If a scratchpad holds several windows, each `show` pulls out the most recently focused one that is still hidden,
-so repeated `show` cycles through them.
+If a scratchpad holds several windows, `show` pulls out the most recently focused one.
+While a window of that scratchpad is out, `show` brings that same window to the focused workspace rather than
+pulling out another, so repeated `show` doesn't cycle through them.
 `hide` puts all of the summoned windows of that scratchpad back at once.
 
 Scratchpad membership lives for as long as AeroSpace is running.
