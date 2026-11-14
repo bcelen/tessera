@@ -19,9 +19,16 @@ if sw_vers -productVersion | grep -q "^14"; then # macOS 14
     echo 'warning: periphery is disabled on macos 14'
 else
     ./script/install-dep.sh --periphery
+    # Xcode 27's SwiftBuild backend writes the index under .build/out instead of .build/debug/index/store,
+    # where periphery looks after building. Point it at the index of the debug build test.sh just made
+    index_store_args=()
+    if [ -d .build/out/v5 ]; then
+        index_store_args=(--index-store-path .build/out)
+    fi
     # Disable superfluous comments detection because it's buggy. todo: report to periphery maintainer
     ./.deps/periphery/periphery scan --quiet \
         --strict \
         --disable-redundant-public-analysis \
-        --no-superfluous-ignore-comments
+        --no-superfluous-ignore-comments \
+        "${index_store_args[@]}"
 fi
