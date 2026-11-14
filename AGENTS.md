@@ -35,7 +35,10 @@ The same repo is worked on from two Macs. Forgejo is the single source of truth 
 BoStudio (Mac Studio)  <->  git.celen.cloud/bogac/tessera  <->  boMacBook (MacBook)
 ```
 
-- Remote: `https://git.celen.cloud/bogac/tessera.git`, branch `main`. No other branches are used.
+- Remote: `https://git.celen.cloud/bogac/tessera.git` (`origin`), branch `main`. No other branches are used.
+- Public mirror: `https://github.com/bcelen/tessera` (remote `github`). Forgejo is always primary: push to
+  `origin` first, then `git push github main`. Never pull from or work against the mirror. Add the remote once
+  per machine with `git remote add github https://github.com/bcelen/tessera.git`.
 - Local path on both machines: `~/dev/forgejo/tessera`.
 - At the start of any session: `git pull`. At the end, or before switching machines: commit, then
   `git push`. Never leave work uncommitted on one machine and start on the other; there is no other
