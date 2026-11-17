@@ -30,6 +30,7 @@ default-root-container-orientation = 'auto'
 # Set the duration to 150 to try a slide instead of a jump; 0 jumps
 scrolling-swipe-modifiers = 'ctrl-alt-shift-cmd'
 scrolling-animation-duration = 0
+scrolling-default-column-width = 33  # new columns open at a third of the screen
 
 automatically-unhide-macos-hidden-apps = false
 
