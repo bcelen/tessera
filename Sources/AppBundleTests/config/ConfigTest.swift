@@ -29,12 +29,14 @@ final class ConfigTest: XCTestCase {
         assertEquals(result.warnings, [])
     }
 
-    /// The config both Macs load through a symlink, see AGENTS.md. A broken binding there breaks every hotkey
-    func testParsePersonalConfig() {
-        let toml = try! String(contentsOf: projectRoot.appending(component: "personal/tessera.toml"), encoding: .utf8)
-        let result = parseConfig(toml)
-        assertEquals(result.errors, [])
-        assertEquals(result.warnings, [])
+    /// The configs the two Macs load through a symlink, see AGENTS.md. A broken binding there breaks every hotkey
+    func testParsePersonalConfigs() {
+        for machine in ["BoStudio", "boMacBook"] {
+            let url = projectRoot.appending(component: "personal/tessera.\(machine).toml")
+            let result = parseConfig(try! String(contentsOf: url, encoding: .utf8))
+            assertEquals(result.errors, [], additionalMsg: machine)
+            assertEquals(result.warnings, [], additionalMsg: machine)
+        }
     }
 
     func testConfigVersionOutOfBounds() {

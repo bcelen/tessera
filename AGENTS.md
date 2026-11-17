@@ -66,22 +66,34 @@ Per machine, never in git, so each Mac must be set up once:
   displays differ) and are not synced.
 - Karabiner, for the hyper key. See `personal/README.md`.
 
-### Keeping the config identical on both machines
+### One config file per machine
 
-`personal/tessera.toml` is the source of truth. The recommended setup on each Mac is a symlink, so
-that `git pull` is all it takes to bring the config across:
+Each Mac has its own config in the repo, because the screens differ and so do some bindings (the
+`place` keys use pixel positions for one display):
+
+| Mac | file |
+|---|---|
+| BoStudio | `personal/tessera.BoStudio.toml` |
+| boMacBook | `personal/tessera.boMacBook.toml` |
+
+Each Mac symlinks its own file, so `git pull` is all it takes to bring a change across and both
+files stay backed up:
 
 ```
-ln -sf ~/dev/forgejo/tessera/personal/tessera.toml ~/.tessera.toml
+ln -sf ~/dev/forgejo/tessera/personal/tessera.BoStudio.toml ~/.tessera.toml    # on BoStudio
+ln -sf ~/dev/forgejo/tessera/personal/tessera.boMacBook.toml ~/.tessera.toml   # on boMacBook
 ```
 
-Edit the repo file, commit, push, pull on the other machine, then `tessera reload-config`. To skip
-that last step, set `auto-reload-config = true` in the config (off by default). It works through the
-symlink: the watcher opens the target file, `git pull` replacing that file fires a delete event, and
-the watcher is re-armed after every reload attempt, so it follows the new file.
+Tessera configs can't include another file, so a change meant for both Macs (a new binding, say) has
+to be made in both files. `ConfigTest.testParsePersonalConfigs` parses both, so a typo in either
+fails the tests. Edit the repo file, commit, push, pull on the other machine, then
+`tessera reload-config`. To skip that last step, set `auto-reload-config = true` in the config (off
+by default). It works through the symlink: the watcher opens the target file, `git pull` replacing
+that file fires a delete event, and the watcher is re-armed after every reload attempt, so it follows
+the new file.
 
-Anything display-specific (gaps sized for one monitor) should be keyed by monitor name rather than
-`monitor.main`, so one file works on both machines. Patterns are case-insensitive regexes matched
+Anything display-specific (gaps sized for one monitor) is still best keyed by monitor name rather than
+`monitor.main`, so a second display plugged into either Mac gets the right value. Patterns are case-insensitive regexes matched
 against the display name, which `tessera list-monitors` prints:
 
 ```toml

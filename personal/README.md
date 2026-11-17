@@ -3,13 +3,15 @@
 My own setup. None of this is read by the window manager; it lives here so the repo root stays
 upstream's.
 
-**`tessera.toml`** is the config I actually run. The live copy is `~/.tessera.toml`; this is
-the version-controlled one. After editing here:
+**`tessera.BoStudio.toml`** and **`tessera.boMacBook.toml`** are the configs I actually run, one per
+Mac, since the screens and some bindings differ. On each Mac `~/.tessera.toml` is a symlink to that
+Mac's file, so after editing here it only takes:
 
 ```
-cp personal/tessera.toml ~/.tessera.toml
 tessera reload-config
 ```
+
+A change meant for both Macs goes into both files. See "One config file per machine" in AGENTS.md.
 
 Four rules organize the bindings. `alt` is where you go and what things look like. `ctrl` is windows:
 focus, move, join, send to a workspace. Hyper, which is Caps Lock through Karabiner, is the four
